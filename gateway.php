@@ -2,17 +2,17 @@
 /*
 Plugin Name: USA ePay Payment Gateway For WooCommerce
 Description: Extends WooCommerce to Process Payments with the USA ePay payment gateway
-Version: 3.2.1
-Plugin URI: http://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
+Version: 3.5
+Plugin URI: https://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
 Author: Pledged Plugins
-Author URI: http://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
+Author URI: https://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
 License: Under GPL2
 
 */
 
-add_action('plugins_loaded', 'woocommerce_tech_authoaim_init', 0);
+add_action('plugins_loaded', 'woocommerce_usa_epay_init', 0);
 
-function woocommerce_tech_authoaim_init() {
+function woocommerce_usa_epay_init() {
 
    if ( !class_exists( 'WC_Payment_Gateway' ) ) 
       return;
@@ -25,13 +25,13 @@ function woocommerce_tech_authoaim_init() {
    /**
    * Payment Gateway class
    */
-   class WC_Tech_Authoaim extends WC_Payment_Gateway 
+   class WC_USAePay extends WC_Payment_Gateway 
    {
       protected $msg = array();
       
       public function __construct(){
 
-         $this->id               = 'authorizeaim';
+         $this->id               = 'usa_epay';
          $this->method_title     = __('USA ePay', 'wc-tech-authoaim');
          $this->icon             = WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . '/images/logo.gif';
          $this->has_fields       = true;
@@ -57,8 +57,8 @@ function woocommerce_tech_authoaim_init() {
              add_action( 'woocommerce_update_options_payment_gateways', array( &$this, 'process_admin_options' ) );
          }
 
-         add_action('woocommerce_receipt_authorizeaim', array(&$this, 'receipt_page'));
-         add_action('woocommerce_thankyou_authorizeaim',array(&$this, 'thankyou_page'));
+         add_action('woocommerce_receipt_usa_epay', array(&$this, 'receipt_page'));
+         add_action('woocommerce_thankyou_usa_epay',array(&$this, 'thankyou_page'));
       }
 
       function init_form_fields()
@@ -86,7 +86,7 @@ function woocommerce_tech_authoaim_init() {
                   'description'  => __('This is API Login ID')),
             'transaction_key' => array(
                   'title'        => __('Transaction Key', 'wc-tech-authoaim'),
-                  'type'         => 'text',
+                  'type'         => 'password',
                   'description'  =>  __('API Transaction Key', 'wc-tech-authoaim')),
             'success_message' => array(
                   'title'        => __('Transaction Success Message', 'wc-tech-authoaim'),
@@ -330,11 +330,11 @@ function woocommerce_tech_authoaim_init() {
    /**
     * Add this Gateway to WooCommerce
    **/
-   function woocommerce_add_tech_authoaim_gateway($methods) 
+   function woocommerce_add_usa_epay_gateway($methods) 
    {
-      $methods[] = 'WC_Tech_Authoaim';
+      $methods[] = 'WC_USAePay';
       return $methods;
    }
 
-   add_filter('woocommerce_payment_gateways', 'woocommerce_add_tech_authoaim_gateway' );
+   add_filter('woocommerce_payment_gateways', 'woocommerce_add_usa_epay_gateway' );
 }
