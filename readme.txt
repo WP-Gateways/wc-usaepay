@@ -1,7 +1,7 @@
 === Plugin Name ===
 USAePay Payment Gateway For WooCommerce
 Contributors: Pledged Plugins
-Tags: woocommerce USAePay, USA ePay, payment gateway, woocommerce, woocommerce payment gateway
+Tags: woocommerce USAePay, USAePay, USA ePay, payment gateway, woocommerce, woocommerce payment gateway
 Plugin URI: http://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
 Requires at least: 3.0.1
 Tested up to: 4.4
