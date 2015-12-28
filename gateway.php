@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: USA ePay Payment Gateway For WooCommerce
-Description: Extends WooCommerce to Process Payments with the USA ePay payment gateway
+Plugin Name: USAePay Payment Gateway For WooCommerce
+Description: Extends WooCommerce to Process Payments with the USAePay payment gateway
 Version: 3.5
 Plugin URI: https://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
 Author: Pledged Plugins
@@ -32,7 +32,7 @@ function woocommerce_usa_epay_init() {
       public function __construct(){
 
          $this->id               = 'usa_epay';
-         $this->method_title     = __('USA ePay', 'wc-tech-authoaim');
+         $this->method_title     = __('USAePay', 'wc-tech-authoaim');
          $this->icon             = WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . '/images/logo.gif';
          $this->has_fields       = true;
          $this->init_form_fields();
@@ -74,12 +74,12 @@ function woocommerce_usa_epay_init() {
                   'title'        => __('Title:', 'wc-tech-authoaim'),
                   'type'         => 'text',
                   'description'  => __('This controls the title which the user sees during checkout.', 'wc-tech-authoaim'),
-                  'default'      => __('USA ePay', 'wc-tech-authoaim')),
+                  'default'      => __('USAePay', 'wc-tech-authoaim')),
             'description'  => array(
                   'title'        => __('Description:', 'wc-tech-authoaim'),
                   'type'         => 'textarea',
                   'description'  => __('This controls the description which the user sees during checkout.', 'wc-tech-authoaim'),
-                  'default'      => __('Pay securely by Credit or Debit Card through USA ePay.', 'wc-tech-authoaim')),
+                  'default'      => __('Pay securely by Credit or Debit Card through USAePay.', 'wc-tech-authoaim')),
             'login_id'     => array(
                   'title'        => __('Login ID', 'wc-tech-authoaim'),
                   'type'         => 'text',
@@ -107,7 +107,7 @@ function woocommerce_usa_epay_init() {
       **/
       public function admin_options()
       {
-         echo '<center><h3>'.__('USA ePay Payment Gateway', 'wc-tech-authoaim').'</h3>';
+         echo '<center><h3>'.__('USAePay Payment Gateway', 'wc-tech-authoaim').'</h3>';
 	 echo '<a href="http://pledgedplugins.com/"><img src="http://pledgedplugins.com/external/small.png"><br><b>We guarantee all of our products.</b></center></a>';
          echo '<table class="form-table">';
          $this->generate_settings_html();
