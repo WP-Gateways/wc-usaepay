@@ -37,15 +37,15 @@ Easy steps to install the plugin:
 4. Under the Checkout tab, you will find all the available payment gateways. Find the 'USAePay Payment Gateway' row and click on the 'Settings' button.
 5. On this page you will find all of the configuration options for this payment gateway.
 6. Enable the method by using the checkbox.
-7. Enter the USAePay account details (Login ID, password)
+7. Enter the USAePay account details (See below)
 
 That's it! You are ready to accept credit cards with your USAePay payment gateway now connected to WooCommerce.
 
 Description: This will appear on checkout page as description for this payment gateway
 
-Login ID: This is the API Login ID provided by USAePay. See your merchant account rep for additional information.
+Login ID: This is your API Login ID with the gateway. See your merchant account rep for additional information.
 
-Transaction Key: This is the Transaction Key provided by USAePay. See your merchant account rep for additional information.
+Transaction Key: This is your API Transaction Key. See your merchant account rep for additional information.
 
 Transaction Success Message: This message will appear upon successful transaction. You can customize this message as per your need.
 

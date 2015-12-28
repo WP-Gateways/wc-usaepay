@@ -83,11 +83,11 @@ function woocommerce_usa_epay_init() {
             'login_id'     => array(
                   'title'        => __('Login ID', 'wc-tech-authoaim'),
                   'type'         => 'text',
-                  'description'  => __('This is API Login ID')),
+                  'description'  => __('This is your API Login ID with the gateway.')),
             'transaction_key' => array(
                   'title'        => __('Transaction Key', 'wc-tech-authoaim'),
                   'type'         => 'password',
-                  'description'  =>  __('API Transaction Key', 'wc-tech-authoaim')),
+                  'description'  =>  __('This is your API Transaction Key.', 'wc-tech-authoaim')),
             'success_message' => array(
                   'title'        => __('Transaction Success Message', 'wc-tech-authoaim'),
                   'type'         => 'textarea',
