@@ -45,7 +45,7 @@ function woocommerce_usa_epay_init() {
          $this->success_message  = $this->settings['success_message'];
          $this->failed_message   = $this->settings['failed_message'];
          $this->liveurl          = 'https://secure.usaepay.com/gateway/transact.dll';
-         $this->testurl          = '';
+         $this->testurl          = 'https://sandbox.usaepay.com/gateway/transact.dll';
          $this->msg['message']   = "";
          $this->msg['class']     = "";
         
@@ -81,13 +81,13 @@ function woocommerce_usa_epay_init() {
                   'description'  => __('This controls the description which the user sees during checkout.', 'wc-tech-authoaim'),
                   'default'      => __('Pay securely by Credit or Debit Card through USAePay.', 'wc-tech-authoaim')),
             'login_id'     => array(
-                  'title'        => __('Login ID', 'wc-tech-authoaim'),
+                  'title'        => __('Source Key', 'wc-tech-authoaim'),
                   'type'         => 'text',
-                  'description'  => __('This is your API Login ID with the gateway.')),
+                  'description'  => __('This is your API Source Key with the gateway.')),
             'transaction_key' => array(
-                  'title'        => __('Transaction Key', 'wc-tech-authoaim'),
+                  'title'        => __('Password (Optional)', 'wc-tech-authoaim'),
                   'type'         => 'password',
-                  'description'  =>  __('This is your API Transaction Key.', 'wc-tech-authoaim')),
+                  'description'  =>  __('This is your account password. Required only if it does does not work without one.', 'wc-tech-authoaim')),
             'success_message' => array(
                   'title'        => __('Transaction Success Message', 'wc-tech-authoaim'),
                   'type'         => 'textarea',
@@ -108,7 +108,7 @@ function woocommerce_usa_epay_init() {
       public function admin_options()
       {
          echo '<center><h3>'.__('USAePay Payment Gateway', 'wc-tech-authoaim').'</h3>';
-	 echo '<a href="http://pledgedplugins.com/"><img src="http://pledgedplugins.com/external/small.png"><br><b>We guarantee all of our products.</b></center></a>';
+		 echo '<a href="http://pledgedplugins.com/"><img src="http://pledgedplugins.com/external/small.png"><br><b>We guarantee all of our products.</b></center></a>';
          echo '<table class="form-table">';
          $this->generate_settings_html();
          echo '</table>';
@@ -248,10 +248,9 @@ function woocommerce_usa_epay_init() {
          curl_close ($request);
          
            
-       $response_array = explode('|',$post_response);
-   
-      
-         if ( count($response_array) > 1 ){
+         $response_array = explode('|',$post_response);
+	   
+	     if ( count($response_array) > 1 ){
          
             if($response_array[0] == '1' ){
 

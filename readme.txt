@@ -43,9 +43,9 @@ That's it! You are ready to accept credit cards with your USAePay payment gatewa
 
 Description: This will appear on checkout page as description for this payment gateway
 
-Login ID: This is your API Login ID with the gateway. See your merchant account rep for additional information.
+Source Key: This is your API Source Key with the gateway. See your merchant account rep for additional information.
 
-Transaction Key: This is your API Transaction Key. See your merchant account rep for additional information.
+Password (Optional): This is your account password. Required only if it does does not work without one. See your merchant account rep for additional information.
 
 Transaction Success Message: This message will appear upon successful transaction. You can customize this message as per your need.
 
