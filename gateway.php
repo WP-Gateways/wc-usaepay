@@ -1,338 +1,334 @@
 <?php
 /*
-Plugin Name: USAePay Payment Gateway For WooCommerce
-Description: Extends WooCommerce to Process Payments with the USAePay payment gateway
-Version: 3.5
+Plugin Name: WooCommerce USAePay Gateway
 Plugin URI: https://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
+Description: A payment gateway for USAePay. An USAePay account and a server with cURL, SSL support, and a valid SSL certificate is required (for security reasons) for this gateway to function. Requires WC 3.3+
+Version: 4.0.0
 Author: Pledged Plugins
-Author URI: https://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/
-License: Under GPL2
+Author URI: https://pledgedplugins.com
+Text Domain: wc-usaepay
+Domain Path: /languages
+WC requires at least: 3.3
+WC tested up to: 5.7
 
+	Copyright: © Pledged Plugins.
+	License: GNU General Public License v3.0
+	License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
-add_action('plugins_loaded', 'woocommerce_usa_epay_init', 0);
-
-function woocommerce_usa_epay_init() {
-
-   if ( !class_exists( 'WC_Payment_Gateway' ) ) 
-      return;
-
-   /**
-   * Localisation
-   */
-   load_plugin_textdomain('wc-tech-authoaim', false, dirname( plugin_basename( __FILE__ ) ) . '/languages');
-   
-   /**
-   * Payment Gateway class
-   */
-   class WC_USAePay extends WC_Payment_Gateway 
-   {
-      protected $msg = array();
-      
-      public function __construct(){
-
-         $this->id               = 'usa_epay';
-         $this->method_title     = __('USAePay', 'wc-tech-authoaim');
-         $this->icon             = WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . '/images/logo.gif';
-         $this->has_fields       = true;
-         $this->init_form_fields();
-         $this->init_settings();
-         $this->title            = $this->settings['title'];
-         $this->description      = $this->settings['description'];
-         $this->login            = $this->settings['login_id'];
-         $this->mode             = 'false';
-         $this->transaction_key  = $this->settings['transaction_key'];
-         $this->success_message  = $this->settings['success_message'];
-         $this->failed_message   = $this->settings['failed_message'];
-         $this->liveurl          = 'https://secure.usaepay.com/gateway/transact.dll';
-         $this->testurl          = 'https://sandbox.usaepay.com/gateway/transact.dll';
-         $this->msg['message']   = "";
-         $this->msg['class']     = "";
-        
-         
-         
-         if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
-             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
-          } else {
-             add_action( 'woocommerce_update_options_payment_gateways', array( &$this, 'process_admin_options' ) );
-         }
-
-         add_action('woocommerce_receipt_usa_epay', array(&$this, 'receipt_page'));
-         add_action('woocommerce_thankyou_usa_epay',array(&$this, 'thankyou_page'));
-      }
-
-      function init_form_fields()
-      {
-
-         $this->form_fields = array(
-            'enabled'      => array(
-                  'title'        => __('Enable/Disable', 'wc-tech-authoaim'),
-                  'type'         => 'checkbox',
-                  'label'        => __('Enable This Payment Module.', 'wc-tech-authoaim'),
-                  'default'      => 'no'),
-            'title'        => array(
-                  'title'        => __('Title:', 'wc-tech-authoaim'),
-                  'type'         => 'text',
-                  'description'  => __('This controls the title which the user sees during checkout.', 'wc-tech-authoaim'),
-                  'default'      => __('USAePay', 'wc-tech-authoaim')),
-            'description'  => array(
-                  'title'        => __('Description:', 'wc-tech-authoaim'),
-                  'type'         => 'textarea',
-                  'description'  => __('This controls the description which the user sees during checkout.', 'wc-tech-authoaim'),
-                  'default'      => __('Pay securely by Credit or Debit Card through USAePay.', 'wc-tech-authoaim')),
-            'login_id'     => array(
-                  'title'        => __('Source Key', 'wc-tech-authoaim'),
-                  'type'         => 'text',
-                  'description'  => __('This is your API Source Key with the gateway.')),
-            'transaction_key' => array(
-                  'title'        => __('Password (Optional)', 'wc-tech-authoaim'),
-                  'type'         => 'password',
-                  'description'  =>  __('This is your account password. Required only if it does does not work without one.', 'wc-tech-authoaim')),
-            'success_message' => array(
-                  'title'        => __('Transaction Success Message', 'wc-tech-authoaim'),
-                  'type'         => 'textarea',
-                  'description'=>  __('Message to be displayed on successful transaction.', 'wc-tech-authoaim'),
-                  'default'      => __('Your payment has been processed successfully.', 'wc-tech-authoaim')),
-            'failed_message'  => array(
-                  'title'        => __('Transaction Failed Message', 'wc-tech-authoaim'),
-                  'type'         => 'textarea',
-                  'description'  =>  __('Message to be displayed on failed transaction.', 'wc-tech-authoaim'),
-                  'default'      => __('Your transaction has been declined.', 'wc-tech-authoaim'))
-         );
-      }
-      
-      /**
-       * Admin Panel Options
-       * 
-      **/
-      public function admin_options()
-      {
-         echo '<center><h3>'.__('USAePay Payment Gateway', 'wc-tech-authoaim').'</h3>';
-		 echo '<a href="http://pledgedplugins.com/"><img src="http://pledgedplugins.com/external/small.png"><br><b>We guarantee all of our products.</b></center></a>';
-         echo '<table class="form-table">';
-         $this->generate_settings_html();
-         echo '</table>';
-
-      }
-      
-      /**
-      *  Fields for credit card entry
-      **/
-      function payment_fields()
-      {
-         if ( $this->description ) 
-            echo wpautop(wptexturize($this->description));
-          	echo '<label style="margin-right:46px; line-height:40px;">Credit Card :</label> <input type="text" name="' . $this->id . '_credircard" /><br/>';
-            echo '<label style="margin-right:30px; line-height:40px;">Expiry (MMYY) :</label> <input type="text"  style="width:50px;" name="' . $this->id . '_ccexpdate" maxlength="4" /><br/>';
-            echo '<label style="margin-right:89px; line-height:40px;">CCV :</label> <input type="text" name="' . $this->id . '_ccvnumber"  maxlength=4 style="width:40px;" /><br/>';
-      }
-      
-      /*
-      * Basic Card validation
-      */
-      public function validate_fields()
-      {
-           global $woocommerce;
-
-           if (!$this->isCreditCardNumber($_POST[$this->id . '_credircard']))
-               wc_add_notice($message = 'Credit Card Number is not valid.', $notice_type = 'error'); 
-
-           if (!$this->isCorrectExpireDate($_POST[$this->id . '_ccexpdate']))
-               wc_add_notice($message = 'Credit Card expiration date is invalid.', $notice_type = 'error'); 
-
-           if (!$this->isCCVNumber($_POST[$this->id . '_ccvnumber']))
-               wc_add_notice($message = 'CCV (Credit Card Validation Number) is not valid.', $notice_type = 'error');
-      }
-      
-      /*
-      * Check card 
-      */
-      private function isCreditCardNumber($toCheck) 
-      {
-         if (!is_numeric($toCheck))
-            return false;
-        
-        $number = preg_replace('/[^0-9]+/', '', $toCheck);
-        $strlen = strlen($number);
-        $sum    = 0;
-
-        if ($strlen < 13)
-            return false; 
-            
-        for ($i=0; $i < $strlen; $i++)
-        {
-            $digit = substr($number, $strlen - $i - 1, 1);
-            if($i % 2 == 1)
-            {
-                $sub_total = $digit * 2;
-                if($sub_total > 9)
-                {
-                    $sub_total = 1 + ($sub_total - 10);
-                }
-            } 
-            else 
-            {
-                $sub_total = $digit;
-            }
-            $sum += $sub_total;
-        }
-        
-        if ($sum > 0 AND $sum % 10 == 0)
-            return true; 
-
-        return false;
-      }
-        
-      private function isCCVNumber($toCheck) 
-      {
-         $length = strlen($toCheck);
-         return is_numeric($toCheck) AND $length > 2 AND $length < 5;
-      }
-    
-      /*
-      * Check expiry date
-      */
-      private function isCorrectExpireDate($date) 
-      {
-          
-         if (is_numeric($date) && (strlen($date) == 4)){
-            return true;
-         }
-         return false;
-      }
-      
-      public function thankyou_page($order_id) 
-      {
-      
-       
-      }
-      
-      /**
-      * Receipt Page
-      **/
-      function receipt_page($order)
-      {
-         echo '<p>'.__('Thank you for your order.', 'wc-tech-authoaim').'</p>';
-        
-      }
-      
-      /**
-       * Process the payment and return the result
-      **/
-      function process_payment($order_id)
-      {
-         global $woocommerce;
-         $order = new WC_Order($order_id);
-
-         if($this->mode == 'true'){
-           $process_url = $this->testurl;
-         }
-         else{
-           $process_url = $this->liveurl;
-         }
-         
-         $params = $this->generate_authorizeaim_params($order);
-         
-         $post_string = "";
-         foreach( $params as $key => $value ){ 
-            $post_string .= "$key=" . urlencode( $value ) . "&"; 
-         }
-         $post_string = rtrim( $post_string, "& " );
-         
-         $request = curl_init($process_url); // initiate curl object
-         curl_setopt($request, CURLOPT_HEADER, 0); // set to 0 to eliminate header info from response
-         curl_setopt($request, CURLOPT_RETURNTRANSFER, 1); // Returns response data instead of TRUE(1)
-         curl_setopt($request, CURLOPT_POSTFIELDS, $post_string); // use HTTP POST to send form data
-         curl_setopt($request, CURLOPT_SSL_VERIFYPEER, FALSE); // uncomment this line if you get no gateway response.
-         $post_response = curl_exec($request); // execute curl post and store results in $post_response
-         curl_close ($request);
-         
-           
-         $response_array = explode('|',$post_response);
-	   
-	     if ( count($response_array) > 1 ){
-         
-            if($response_array[0] == '1' ){
-
-                if ($order->status != 'completed') {
-                    $order->payment_complete( $response_array[6]);
-                     $woocommerce->cart->empty_cart();
-
-                     $order->add_order_note($this->success_message. $response_array[3] . 'Transaction ID: '. $response_array[6] );
-                     unset($_SESSION['order_awaiting_payment']);
-                 }
-
-                  return array('result'   => 'success',
-                     'redirect'  => get_site_url().'/checkout/order-received/'.$order->id.'/?key='.$order->order_key );
-            }
-            else{
-            
-                $order->add_order_note($this->failed_message .$response_array[3] );
-                wc_add_notice($message = '(Transaction Error) ' . $response_array[3], $notice_type = 'error'); 
-            }
-        }
-        else {
-            
-            $order->add_order_note($this->failed_message);
-            $order->update_status('failed');
-            wc_add_notice($message = '(Transaction Error) Error processing payment.', $notice_type = 'error'); 
-        }
-         
-         
-         
-      }
-      
-      /**
-      * Generate payment gateway link
-      **/
-      public function generate_authorizeaim_params($order)
-      {
-         $authorizeaim_args = array(
-            'x_login'                  => $this->login,
-            'x_tran_key'               => $this->transaction_key,
-            'x_version'                => '3.1',
-            'x_delim_data'             => 'TRUE',
-            'x_delim_char'             => '|',
-            'x_relay_response'         => 'FALSE',
-            'x_type'                   => 'AUTH_CAPTURE',
-            'x_method'                 => 'CC',
-            'x_card_num'               => $_POST[$this->id . '_credircard'],
-            'x_exp_date'               => $_POST[$this->id . '_ccexpdate'],
-            'x_description'            => 'Order #'.$order->id,
-            'x_amount'                 => $order->order_total,
-            'x_first_name'             => $order->billing_first_name ,
-            'x_last_name'              => $order->billing_last_name ,
-            'x_company'                => $order->billing_company ,
-            'x_address'                => $order->billing_address_1 .' '. $order->billing_address_2,
-            'x_country'                => $order->billing_country,
-            'x_phone'                  => $order->billing_phone,
-            'x_state'                  => $order->billing_state,
-            'x_city'                   => $order->billing_city,
-            'x_zip'                    => $order->billing_postcode,
-            'x_email'                  => $order->billing_email,
-            'x_card_code'              => $_POST[$this->id . '_ccvnumber'], 
-            'x_ship_to_first_name'     => $order->shipping_first_name,
-            'x_ship_to_last_name'      => $order->shipping_last_name,
-            'x_ship_to_address'        => $order->shipping_address_1,
-            'x_ship_to_city'           => $order->shipping_city,
-            'x_ship_to_zip'            => $order->shipping_postcode,
-            'x_ship_to_state'          => $order->shipping_state,
-            
-             );
-         return $authorizeaim_args;
-      }
-
-      
-   }
-
-   /**
-    * Add this Gateway to WooCommerce
-   **/
-   function woocommerce_add_usa_epay_gateway($methods) 
-   {
-      $methods[] = 'WC_USAePay';
-      return $methods;
-   }
-
-   add_filter('woocommerce_payment_gateways', 'woocommerce_add_usa_epay_gateway' );
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
+
+define( 'WC_USAEPAY_VERSION', '4.0.0' );
+define( 'WC_USAEPAY_MIN_PHP_VER', '5.6.0' );
+define( 'WC_USAEPAY_MIN_WC_VER', '3.3' );
+define( 'WC_USAEPAY_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
+define( 'WC_USAEPAY_MAIN_FILE', __FILE__ );
+
+/**
+ * Main USAePay class which sets the gateway up for us
+ */
+class WC_USAePay {
+
+	/**
+     * @var Singleton The reference the *Singleton* instance of this class
+     */
+    private static $instance;
+
+    /**
+     * Returns the *Singleton* instance of this class.
+     *
+     * @return Singleton The *Singleton* instance.
+     */
+    public static function get_instance() {
+        if ( null === self::$instance ) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * Flag to indicate whether or not we need to load code for / support subscriptions.
+     *
+     * @var bool
+     */
+    private $subscription_support_enabled = false;
+
+    /**
+     * Flag to indicate whether or not we need to load support for pre-orders.
+     *
+     * @since 3.0.3
+     *
+     * @var bool
+     */
+    private $pre_order_enabled = false;
+
+	/**
+     * Notices (array)
+     * @var array
+     */
+    public $notices = array();
+
+    /**
+     * Constructor
+     */
+    public function __construct() {
+        // Actions
+        add_action( 'admin_init', array( $this, 'check_environment' ) );
+        add_action( 'admin_notices', array( $this, 'admin_notices' ), 15 );
+        add_action( 'plugins_loaded', array( $this, 'init' ) );
+    }
+
+    public function settings_url() {
+        return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=usaepay' );
+    }
+
+    /**
+	 * Add relevant links to plugins page
+	 * @param  array $links
+	 * @return array
+	 */
+	public function plugin_action_links( $links ) {
+		$plugin_links = array(
+			'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=usaepay' ) . '">' . __( 'Settings', 'wc-usaepay' ) . '</a>',
+			'<a href="https://pledgedplugins.com/support/" target="_blank">' . __( 'Support', 'wc-usaepay' ) . '</a>',
+		);
+		return array_merge( $plugin_links, $links );
+	}
+
+    /**
+     * Init localisations and files
+     */
+    public function init() {
+        // Don't hook anything else in the plugin if we're in an incompatible environment
+        if ( self::get_environment_warning() ) {
+            return;
+        }
+
+        // Init the gateway itself
+        $this->init_gateways();
+
+        // required files
+        require_once dirname( __FILE__ ) . '/includes/class-wc-gateway-usaepay-logger.php';
+
+        add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_action_links' ), 11 );
+
+        add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'capture_payment' ) );
+        add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'capture_payment' ) );
+        add_action( 'woocommerce_order_status_on-hold_to_cancelled', array( $this, 'cancel_payment' ) );
+        add_action( 'woocommerce_order_status_on-hold_to_refunded', array( $this, 'cancel_payment' ) );
+    }
+
+    /**
+     * Allow this class and other classes to add slug keyed notices (to avoid duplication)
+     */
+    public function add_admin_notice( $slug, $class, $message ) {
+        $this->notices[$slug] = array(
+            'class'   => $class,
+            'message' => $message,
+        );
+    }
+
+    /**
+     * The backup sanity check, in case the plugin is activated in a weird way,
+     * or the environment changes after activation. Also handles upgrade routines.
+     */
+    public function check_environment() {
+
+        if ( !defined( 'IFRAME_REQUEST' ) && WC_USAEPAY_VERSION !== get_option( 'wc_usaepay_version', '3.5' ) ) {
+            $this->install();
+            do_action( 'woocommerce_usaepay_updated' );
+        }
+
+        $environment_warning = self::get_environment_warning();
+
+        if ( $environment_warning && is_plugin_active( plugin_basename( __FILE__ ) ) ) {
+            $this->add_admin_notice( 'bad_environment', 'error', $environment_warning );
+        }
+
+        // Check if secret key present. Otherwise prompt, via notice, to go to setting.
+		$options = get_option( 'woocommerce_usaepay_settings' );
+		$secret = isset( $options['pin'] ) ? $options['pin'] : '';
+
+        if ( empty( $secret ) && !( isset( $_GET['page'], $_GET['section'] ) && 'wc-settings' === $_GET['page'] && 'usaepay' === $_GET['section'] ) ) {
+            $setting_link = $this->settings_url();
+            $this->add_admin_notice( 'prompt_connect', 'notice notice-warning', sprintf( __( 'USAePay is almost ready. To get started, <a href="%s">set your USAePay account keys</a>.', 'wc-usaepay' ), $setting_link ) );
+        }
+
+    }
+
+    /**
+     * Updates the plugin version in db
+     *
+     * @since 3.1.0
+     * @version 3.1.0
+     * @return bool
+     */
+    private static function _update_plugin_version() {
+        delete_option( 'wc_usaepay_version' );
+        update_option( 'wc_usaepay_version', WC_USAEPAY_VERSION );
+        return true;
+    }
+
+    /**
+     * Handles upgrade routines.
+     *
+     * @since 3.1.0
+     * @version 3.1.0
+     */
+    public function install() {
+        if ( !defined( 'WC_USAEPAY_INSTALLING' ) ) {
+            define( 'WC_USAEPAY_INSTALLING', true );
+        }
+        $this->_update_plugin_version();
+    }
+
+    /**
+     * Checks the environment for compatibility problems.  Returns a string with the first incompatibility
+     * found or false if the environment has no problems.
+     */
+    static function get_environment_warning() {
+
+        if ( version_compare( phpversion(), WC_USAEPAY_MIN_PHP_VER, '<' ) ) {
+            $message = __( 'WooCommerce USAePay - The minimum PHP version required for this plugin is %1$s. You are running %2$s.', 'wc-usaepay' );
+            return sprintf( $message, WC_USAEPAY_MIN_PHP_VER, phpversion() );
+        }
+
+        if ( !defined( 'WC_VERSION' ) ) {
+            return __( 'WooCommerce USAePay requires WooCommerce to be activated to work.', 'wc-usaepay' );
+        }
+
+        if ( version_compare( WC_VERSION, WC_USAEPAY_MIN_WC_VER, '<' ) ) {
+            $message = __( 'WooCommerce USAePay - The minimum WooCommerce version required for this plugin is %1$s. You are running %2$s.', 'wc-usaepay' );
+            return sprintf( $message, WC_USAEPAY_MIN_WC_VER, WC_VERSION );
+        }
+
+        if ( !function_exists( 'curl_init' ) ) {
+            return __( 'WooCommerce USAePay - cURL is not installed.', 'wc-usaepay' );
+        }
+        return false;
+    }
+
+    /**
+     * Display any notices we've collected thus far (e.g. for connection, disconnection)
+     */
+    public function admin_notices() {
+
+        foreach ( (array) $this->notices as $notice_key => $notice ) {
+			echo "<div class='" . esc_attr( $notice['class'] ) . "'><p>";
+			echo wp_kses( $notice['message'], array( 'a' => array( 'href' => array() ) ) );
+			echo '</p></div>';
+		}
+    }
+
+    /**
+     * Initialize the gateway. Called very early - in the context of the plugins_loaded action
+     *
+     * @since 1.0.0
+     */
+    public function init_gateways() {
+        if ( !class_exists( 'WC_Payment_Gateway' ) ) {
+            return;
+        }
+        // Includes
+        if ( is_admin() ) {
+            require_once dirname( __FILE__ ) . '/includes/class-wc-usaepay-privacy.php';
+        }
+        include_once dirname( __FILE__ ) . '/includes/class-wc-gateway-usaepay.php';
+        load_plugin_textdomain( 'wc-usaepay', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+        add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
+    }
+
+    /**
+     * Add the gateways to WooCommerce
+     *
+     * @since 1.0.0
+     */
+    public function add_gateways( $methods ) {
+        $methods[] = 'WC_Gateway_USAePay';
+        return $methods;
+    }
+
+	/**
+	 * Capture payment when the order is changed from on-hold to complete or processing
+	 *
+	 * @param  int $order_id
+	 */
+	public function capture_payment( $order_id ) {
+		$order = wc_get_order( $order_id );
+		$gateway = new WC_Gateway_USAePay();
+
+		$gateway->log( "Info: Beginning capture payment for order $order_id for the amount of {$order->get_total()}" );
+
+		if ( $order->get_payment_method() == 'usaepay' ) {
+			$charge   = $order->get_meta( '_usaepay_charge_id' );
+			$captured = $order->get_meta( '_usaepay_charge_captured' );
+
+			if ( $charge && $captured == 'no' ) {
+				$args = array(
+					'command'	=> 'cc:capture',
+					'amount'  	=> $order->get_total(),
+					'refnum'	=> $order->get_transaction_id(),
+				);
+				$args = apply_filters( 'wc_usaepay_request_args', $args, $order );
+
+				$response = $gateway->usaepay_request( $args );
+
+				if ( is_wp_error( $response ) ) {
+					$order->add_order_note( __( 'Unable to capture charge!', 'wc-usaepay' ) . ' ' . $response->get_error_message() );
+				} else {
+					$complete_message = sprintf( __( 'USAePay charge complete (Charge ID: %s)', 'wc-usaepay' ), $response['refnum'] );
+ 					$order->add_order_note( $complete_message );
+					$gateway->log( "Success: $complete_message" );
+
+					$order->update_meta_data( '_usaepay_charge_captured', 'yes' );
+					$order->update_meta_data( 'USAePay Payment ID', $response['refnum'] );
+
+					$order->set_transaction_id( $response['refnum'] );
+					$order->save();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Cancel pre-auth on refund/cancellation
+	 *
+	 * @param  int $order_id
+	 */
+	public function cancel_payment( $order_id ) {
+		$order = wc_get_order( $order_id );
+		$gateway = new WC_Gateway_USAePay();
+
+		$gateway->log( "Info: Beginning cancel payment for order $order_id for the amount of {$order->get_total()}" );
+
+		if ( $order->get_payment_method() == 'usaepay' ) {
+			$charge = $order->get_meta( '_usaepay_charge_id' );
+
+			if ( $charge ) {
+				$args = array(
+					'command'	=> 'void',
+					'refnum'	=> $order->get_transaction_id(),
+				);
+				$args = apply_filters( 'wc_usaepay_request_args', $args, $order );
+
+				$response = $gateway->usaepay_request( $args );
+
+				if ( is_wp_error( $response ) ) {
+					$order->add_order_note( __( 'Unable to refund charge!', 'wc-usaepay' ) . ' ' . $response->get_error_message() );
+				} else {
+					$cancel_message = sprintf( __( 'USAePay charge refunded (Charge ID: %s)', 'wc-usaepay' ), $response['refnum'] );
+ 					$order->add_order_note( $cancel_message );
+					$gateway->log( "Success: $cancel_message" );
+
+					$order->delete_meta_data( '_usaepay_charge_captured' );
+					$order->delete_meta_data( '_usaepay_charge_id' );
+					$order->save();
+				}
+			}
+		}
+	}
+
+}
+$GLOBALS['wc_usaepay'] = WC_USAePay::get_instance();
