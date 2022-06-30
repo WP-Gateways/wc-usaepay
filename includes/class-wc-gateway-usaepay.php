@@ -22,7 +22,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 	public function __construct() {
 		$this->id                    = 'usaepay';
 		$this->method_title          = __( 'USAePay', 'wc-usaepay' );
-		$this->method_description 	 = sprintf( esc_html__( 'Live merchant accounts cannot be used in a sandbox environment, so to test the plugin, please make sure you are using a separate sandbox account. If you do not have a sandbox account, you can sign up for one from %shere%s.', 'wc-usaepay' ), '<a href="https://sandbox.usaepay.com/_developer/app/login" target="_blank">', '</a>' );
+		$this->method_description 	 = sprintf( esc_html__( 'Live merchant accounts cannot be used in a sandbox environment, so to test the plugin, please make sure you are using a separate sandbox account. If you do not have a sandbox account, you can sign up for one from %shere%s.', 'wc-usaepay' ), '<a href="https://developer.usaepay.com/_developer/app/register" target="_blank">', '</a>' );
 		$this->has_fields            = true;
 		$this->supports              = array( 'products', 'refunds' );
 
