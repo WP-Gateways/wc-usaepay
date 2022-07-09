@@ -3,13 +3,13 @@
 Plugin Name: Payment Gateway for USAePay on WooCommerce
 Plugin URI: https://pledgedplugins.com/
 Description: A payment gateway for USAePay. An USAePay account and a server with cURL, SSL support, and a valid SSL certificate is required (for security reasons) for this gateway to function. Requires WC 3.3+
-Version: 4.0.0
+Version: 4.0.1
 Author: Pledged Plugins
 Author URI: https://pledgedplugins.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 5.7
+WC tested up to: 6.7
 
 	Copyright: © Pledged Plugins.
 	License: GNU General Public License v3.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_USAEPAY_VERSION', '4.0.0' );
+define( 'WC_USAEPAY_VERSION', '4.0.1' );
 define( 'WC_USAEPAY_MIN_PHP_VER', '5.6.0' );
 define( 'WC_USAEPAY_MIN_WC_VER', '3.3' );
 define( 'WC_USAEPAY_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
