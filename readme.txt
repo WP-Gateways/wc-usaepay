@@ -7,7 +7,7 @@ Author URI: https://pledgedplugins.com
 Requires at least: 4.4
 Tested up to: 6.0
 Requires PHP: 5.6
-Stable tag: 4.0.0
+Stable tag: 4.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ This Payment Gateway For WooCommerce extends the functionality of WooCommerce to
 * [**WooCommerce**](https://woocommerce.com/)  version 3.3.0 or later.
 * A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 #### Extend, Contribute, Integrate
-Visit the [plugin page](http://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
+Visit the [plugin page](https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
 
 For custom payment gateway integration with your WordPress website, please [contact us here](https://wpgateways.com/support/custom-payment-gateway-integration/).
 
@@ -63,6 +63,11 @@ That's it! You are ready to accept credit cards with your USAePay payment gatewa
 A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 
 == Changelog ==
+
+= 4.0.1 =
+* Fixed PHP notices
+* Updated "WC tested up to" header to 6.7
+* Updated compatibility info to WordPress 6.0
 
 = 4.0.0 =
 * Removed deprecated Authorize.Net AIM code

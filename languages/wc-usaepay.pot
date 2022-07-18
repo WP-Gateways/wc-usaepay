@@ -2,9 +2,9 @@
 msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"Project-Id-Version: WooCommerce USAePay Gateway\n"
-"POT-Creation-Date: 2021-05-31 20:03+0530\n"
-"PO-Revision-Date: 2021-05-31 20:03+0530\n"
+"Project-Id-Version: Payment Gateway for USAePay on WooCommerce\n"
+"POT-Creation-Date: 2022-07-09 13:44+0530\n"
+"PO-Revision-Date: 2022-07-09 13:43+0530\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -313,29 +313,29 @@ msgstr ""
 msgid "%s - Order %s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:358
+#: includes/class-wc-gateway-usaepay.php:357
 #, php-format
 msgid ""
 "USAePay charge authorized (Charge ID: %s). Process order to take payment, or "
 "cancel to remove the pre-authorization."
 msgstr ""
 
+#: includes/class-wc-gateway-usaepay.php:378
 #: includes/class-wc-gateway-usaepay.php:379
-#: includes/class-wc-gateway-usaepay.php:380
 #, php-format
 msgid "Gateway Error: %s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:383
+#: includes/class-wc-gateway-usaepay.php:382
 #, php-format
 msgid "USAePay failure reason: %s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:432
+#: includes/class-wc-gateway-usaepay.php:431
 msgid "There was an error with the gateway response."
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:478
+#: includes/class-wc-gateway-usaepay.php:477
 #, php-format
 msgid "Refunded %s - Refund ID: %s - Reason: %s"
 msgstr ""
@@ -389,12 +389,11 @@ msgid "USAePay personal data erased."
 msgstr ""
 
 #. Plugin Name of the plugin/theme
-msgid "WooCommerce USAePay Gateway"
+msgid "Payment Gateway for USAePay on WooCommerce"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
-msgid ""
-"https://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/"
+msgid "https://pledgedplugins.com/"
 msgstr ""
 
 #. Description of the plugin/theme

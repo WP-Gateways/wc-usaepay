@@ -348,7 +348,6 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 
                 // Store captured value
                 $order->update_meta_data( '_usaepay_charge_captured', 'no' );
-                $order->update_meta_data( '_transaction_id', $response['refnum'] );
 
                 if ( $order->has_status( array( 'pending', 'failed' ) ) ) {
                     wc_reduce_stock_levels( $order_id );
