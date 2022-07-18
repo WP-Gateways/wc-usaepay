@@ -34,7 +34,7 @@ This Payment Gateway For WooCommerce extends the functionality of WooCommerce to
 * [**WooCommerce**](https://woocommerce.com/)  version 3.3.0 or later.
 * A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 #### Extend, Contribute, Integrate
-Visit the [plugin page](http://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
+Visit the [plugin page](https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
 
 For custom payment gateway integration with your WordPress website, please [contact us here](https://wpgateways.com/support/custom-payment-gateway-integration/).
 
