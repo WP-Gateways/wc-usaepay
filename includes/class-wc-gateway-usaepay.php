@@ -11,6 +11,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 
+	public $testmode;
+	public $capture;
+	public $source_key;
+	public $pin;
+	public $logging;
+	public $debugging;
+	public $line_items;
+	public $allowed_card_types;
+	public $customer_receipt;
+	public $statement_descriptor;
+
 	private $currencies = array( 'USD' );
 
     const LIVE_URL    = 'https://usaepay.com/api/v2/transactions';
@@ -36,15 +47,16 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		$this->title       		  	= $this->get_option( 'title' );
 		$this->description 		  	= $this->get_option( 'description' );
 		$this->enabled     		  	= $this->get_option( 'enabled' );
-		$this->testmode    		  	= $this->get_option( 'testmode' ) === 'yes' ? true : false;
-		$this->capture     		  	= $this->get_option( 'capture', 'yes' ) === 'yes' ? true : false;
+		$this->testmode    		  	= $this->get_option( 'testmode' ) === 'yes';
+		$this->capture     		  	= $this->get_option( 'capture', 'yes' ) === 'yes';
 		$this->statement_descriptor = $this->get_option( 'statement_descriptor', wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) );
 		$this->source_key	   		= $this->get_option( 'source_key' );
 		$this->pin	  				= $this->get_option( 'pin' );
-		$this->logging     		  	= $this->get_option( 'logging' ) === 'yes' ? true : false;
-		$this->debugging   		  	= $this->get_option( 'debugging' ) === 'yes' ? true : false;
+		$this->logging     		  	= $this->get_option( 'logging' ) === 'yes';
+		$this->debugging   		  	= $this->get_option( 'debugging' ) === 'yes';
+		$this->line_items           = $this->get_option( 'line_items' ) === 'yes';
 		$this->allowed_card_types 	= $this->get_option( 'allowed_card_types', array() );
-		$this->customer_receipt   	= $this->get_option( 'customer_receipt' ) === 'yes' ? true : false;
+		$this->customer_receipt   	= $this->get_option( 'customer_receipt' ) === 'yes';
 
 		if ( $this->testmode ) {
 			$this->description .= ' ' . sprintf( __( '<br /><br /><strong>TEST MODE ENABLED</strong><br /> In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date or check the documentation "<a href="%s">%s API</a>" for more card numbers.', 'wc-usaepay' ), 'https://help.usaepay.com/developer/sandbox', $this->method_title );
@@ -212,6 +224,13 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'description' => __( '<strong>CAUTION! Enabling this option will write gateway requests possibly including card numbers and CVV to the logs.</strong> Do not turn this on unless you have a problem processing credit cards. You must only ever enable it temporarily for troubleshooting or to send requested information to the plugin author. It must be disabled straight away after the issues are resolved and the plugin logs should be deleted.', 'wc-usaepay' ) . ' ' . sprintf( __( '<a href="%s">Click here</a> to check and delete the full log file.', 'wc-usaepay' ), admin_url( 'admin.php?page=wc-status&tab=logs&log_file=' . WC_Log_Handler_File::get_log_file_name( 'woocommerce-gateway-usaepay' ) ) ),
 				'default'     => 'no',
 			),
+			'line_items'           => array(
+				'title'       => __( 'Line Items', 'wc-usaepay' ),
+				'label'       => __( 'Enable Line Items', 'wc-usaepay' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Add line item data to description sent to the gateway (eg. Item x qty).', 'wc-usaepay' ),
+				'default'     => 'no'
+			),
 			'allowed_card_types' => array(
 				'title'       => __( 'Allowed Card types', 'wc-usaepay' ),
 				'class'       => 'wc-enhanced-select',
@@ -266,9 +285,10 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 
 		$this->log( "Info: Begin processing payment for order {$order_id} for the amount of {$order->get_total()}" );
 
+		$response = false;
+
 		// Use USAePay CURL API for payment
 		try {
-			$payment_args = array();
 
 			// Check for CC details filled or not
 			if ( empty( $_POST['usaepay-card-number'] ) || empty( $_POST['usaepay-card-expiry'] ) || empty( $_POST['usaepay-card-cvc'] ) ) {
@@ -284,7 +304,11 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 			$expiry = explode( ' / ', wc_clean( $_POST['usaepay-card-expiry'] ) );
 			$expiry[1] = substr( $expiry[1], -2 );
 
-			$description = sprintf( __( '%s - Order %s', 'wc-usaepay' ), $this->statement_descriptor, $order->get_order_number() );
+			$description = trim( sprintf( __( '%1$s - Order %2$s', 'wc-usaepay' ), $this->statement_descriptor, $order->get_order_number() ) );
+
+			if ( $this->line_items ) {
+				$description .= ' (' . $this->get_line_items( $order ) . ')';
+			}
 
 			$payment_args = array(
 				'command'	 	=> $this->capture ? 'cc:sale' : 'cc:authonly',
@@ -316,7 +340,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				),
 				'ignore_duplicate' => 0,
 			);
-			$payment_args = apply_filters( 'wc_usaepay_request_args', $payment_args, $order );
+			$payment_args = apply_filters( 'wc_usaepay_process_payment_request_args', $payment_args, $order );
 
 			$response = $this->usaepay_request( $payment_args );
 
@@ -326,6 +350,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 
 			// Store charge ID
 			$order->update_meta_data( '_usaepay_charge_id', $response['refnum'] );
+			$order->update_meta_data( '_usaepay_authorization_code', $response['authcode'] );
 			$order->update_meta_data( '_usaepay_cc_last4', substr( wc_clean( $_POST['usaepay-card-number'] ), -4 ) );
 
 			$order->set_transaction_id( $response['refnum'] );
@@ -340,7 +365,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
                 $order->payment_complete( $response['refnum'] );
 
                 // Add order note
-                $complete_message = sprintf( __( 'USAePay charge complete (Charge ID: %s)', 'wc-usaepay' ), $response['refnum'] );
+				$complete_message = trim( sprintf( __( "USAePay charge complete (Charge ID: %s) %s %s", 'wc-usaepay' ), $response['refnum'], self::get_avs_message( $response ), self::get_cvv_message( $response ) ) );
                 $order->add_order_note( $complete_message );
                 $this->log( "Success: $complete_message" );
 
@@ -354,8 +379,8 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
                 }
 
                 // Mark as on-hold
-                $authorized_message = sprintf( __( 'USAePay charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization.', 'wc-usaepay' ), $response['refnum'] );
-                $order->update_status( 'on-hold', $authorized_message );
+				$authorized_message = trim( sprintf( __( "USAePay charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization. %s %s", 'wc-usaepay' ), $response['refnum'], self::get_avs_message( $response ), self::get_cvv_message( $response ) ) );
+                $order->update_status( 'on-hold', $authorized_message . "\n" );
                 $this->log( "Success: $authorized_message" );
 
             }
@@ -379,7 +404,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
             $this->log( sprintf( __( 'Gateway Error: %s', 'wc-usaepay' ), $e->getMessage() ) );
 
 			if ( is_wp_error( $response ) && $response = $response->get_error_data() ) {
-                $order->add_order_note( sprintf( __( 'USAePay failure reason: %s', 'wc-usaepay' ), $response['error'] ) );
+				$order->add_order_note( trim( sprintf( __( "USAePay failure reason: %s %s %s", 'wc-usaepay' ), $response['error'], self::get_avs_message( $response ), self::get_cvv_message( $response ) ) ) );
             }
 
 			do_action( 'wc_gateway_usaepay_process_payment_error', $e, $order );
@@ -466,7 +491,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 			//'order_description' => $reason,
 		);
 
-		$args = apply_filters( 'wc_usaepay_request_args', $args, $order );
+		$args = apply_filters( 'wc_usaepay_refund_request_args', $args, $order );
 
 		$response = $this->usaepay_request( $args );
 
@@ -533,12 +558,13 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		);
 
 		foreach( $card_types as $type ) {
-			$card_type = $type['name'];
 			$compare = $type[$field];
 			if ( ( $field == 'pattern' && preg_match( $compare, $value, $match ) ) || $compare == $value ) {
 				return $type[$return];
 			}
 		}
+
+		return false;
 
 	}
 
@@ -593,11 +619,60 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * get_avs_message function.
+	 *
+	 * @access public
+	 *
+	 * @param array $response
+	 *
+	 * @return string
+	 */
+	public function get_avs_message( $response ) {
+		$avs_code    = $response['avs']['result_code'];
+		$avs_message = $response['avs']['result'];
+
+		if ( $avs_code && $avs_message ) {
+			return "\n" . sprintf( 'AVS Response: %s', $avs_code . ' - ' . $avs_message );
+		} else {
+			return '';
+		}
+	}
+
+	/**
+	 * get_cvv_message function.
+	 *
+	 * @access public
+	 *
+	 * @param array $response
+	 *
+	 * @return string
+	 */
+	public function get_cvv_message( $response ) {
+		$cvv_code    = $response['cvc']['result_code'];
+		$cvv_message = $response['cvc']['result'];
+
+		if ( $cvv_message ) {
+			return "\n" . sprintf( 'CVV2 Response: %s', ( $cvv_code ? $cvv_code . ' - ' : '' ) . $cvv_message );
+		} else {
+			return '';
+		}
+	}
+
+	public function get_line_items( $order ) {
+		$line_items = array();
+		// order line items
+		foreach ( $order->get_items() as $item ) {
+			$line_items[] = $item->get_name() . ' x ' . $item->get_quantity();
+		}
+
+		return implode( ', ', $line_items );
+	}
+
+	/**
 	 * Send the request to USAePay's API
 	 *
 	 * @since 2.6.10
 	 *
-	 * @param string $context
 	 * @param string $message
 	 */
 	public function log( $message ) {

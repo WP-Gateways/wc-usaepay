@@ -5,9 +5,9 @@ Tags: woocommerce USAePay, USAePay, USA ePay, payment gateway, woocommerce, wooc
 Plugin URI: https://pledgedplugins.com
 Author URI: https://pledgedplugins.com
 Requires at least: 4.4
-Tested up to: 6.0
+Tested up to: 6.2
 Requires PHP: 5.6
-Stable tag: 4.0.1
+Stable tag: 4.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ This Payment Gateway For WooCommerce extends the functionality of WooCommerce to
 * [**WooCommerce**](https://woocommerce.com/)  version 3.3.0 or later.
 * A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 #### Extend, Contribute, Integrate
-Visit the [plugin page](https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
+Visit the [plugin page](http://pledgedplugins.com/products/usa-epay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
 
 For custom payment gateway integration with your WordPress website, please [contact us here](https://wpgateways.com/support/custom-payment-gateway-integration/).
 
@@ -63,6 +63,17 @@ That's it! You are ready to accept credit cards with your USAePay payment gatewa
 A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 
 == Changelog ==
+
+= 4.1.0 =
+* Added AVS and CVV responses to order notes
+* Added Line Items option to plugin settings
+* Made compatible with WooCommerce HPOS
+* Changed filter naming for gateway request parameters
+* Capture or void payment if the order is authorized regardless of whether it was changed from on-hold or not
+* Saved "authcode" from transaction response to order meta
+* Fixed occasional fatal error during WooCommerce upgrade
+* Updated "WC tested up to" header to 7.5
+* Updated compatibility info to WordPress 6.2
 
 = 4.0.1 =
 * Fixed PHP notices
