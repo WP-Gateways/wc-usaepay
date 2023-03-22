@@ -3,13 +3,13 @@
 Plugin Name: Payment Gateway for USAePay on WooCommerce
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Description: A payment gateway for USAePay. An USAePay account and a server with cURL, SSL support, and a valid SSL certificate is required (for security reasons) for this gateway to function. Requires WC 3.3+
-Version: 4.0.1
+Version: 4.1.0
 Author: Pledged Plugins
 Author URI: https://pledgedplugins.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 6.7
+WC tested up to: 7.5
 
 	Copyright: © Pledged Plugins.
 	License: GNU General Public License v3.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_USAEPAY_VERSION', '4.0.1' );
+define( 'WC_USAEPAY_VERSION', '4.1.0' );
 define( 'WC_USAEPAY_MIN_PHP_VER', '5.6.0' );
 define( 'WC_USAEPAY_MIN_WC_VER', '3.3' );
 define( 'WC_USAEPAY_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
@@ -74,6 +74,14 @@ class WC_USAePay {
      * Constructor
      */
     public function __construct() {
+
+		// Declaring HPOS feature compatibility
+		add_action( 'before_woocommerce_init', function() {
+			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			}
+		} );
+
         // Actions
         add_action( 'admin_init', array( $this, 'check_environment' ) );
         add_action( 'admin_notices', array( $this, 'admin_notices' ), 15 );
@@ -114,10 +122,10 @@ class WC_USAePay {
 
         add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_action_links' ), 11 );
 
-        add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'capture_payment' ) );
-        add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'capture_payment' ) );
-        add_action( 'woocommerce_order_status_on-hold_to_cancelled', array( $this, 'cancel_payment' ) );
-        add_action( 'woocommerce_order_status_on-hold_to_refunded', array( $this, 'cancel_payment' ) );
+        add_action( 'woocommerce_order_status_processing', array( $this, 'capture_payment' ) );
+        add_action( 'woocommerce_order_status_completed', array( $this, 'capture_payment' ) );
+        add_action( 'woocommerce_order_status_cancelled', array( $this, 'cancel_payment' ) );
+        add_action( 'woocommerce_order_status_refunded', array( $this, 'cancel_payment' ) );
     }
 
     /**
@@ -146,6 +154,10 @@ class WC_USAePay {
         if ( $environment_warning && is_plugin_active( plugin_basename( __FILE__ ) ) ) {
             $this->add_admin_notice( 'bad_environment', 'error', $environment_warning );
         }
+
+		if ( ! class_exists( 'WC_Gateway_USAePay' ) ) {
+            return;
+		}
 
         // Check if secret key present. Otherwise prompt, via notice, to go to setting.
 		$options = get_option( 'woocommerce_usaepay_settings' );
@@ -266,12 +278,19 @@ class WC_USAePay {
 			$captured = $order->get_meta( '_usaepay_charge_captured' );
 
 			if ( $charge && $captured == 'no' ) {
+
+				$order_total = $order->get_total();
+
+				if ( 0 < $order->get_total_refunded() ) {
+					$order_total = $order_total - $order->get_total_refunded();
+				}
+
 				$args = array(
 					'command'	=> 'cc:capture',
-					'amount'  	=> $order->get_total(),
+					'amount'  	=> $order_total,
 					'refnum'	=> $order->get_transaction_id(),
 				);
-				$args = apply_filters( 'wc_usaepay_request_args', $args, $order );
+				$args = apply_filters( 'wc_usaepay_capture_payment_request_args', $args, $order );
 
 				$response = $gateway->usaepay_request( $args );
 
@@ -305,13 +324,14 @@ class WC_USAePay {
 
 		if ( $order->get_payment_method() == 'usaepay' ) {
 			$charge = $order->get_meta( '_usaepay_charge_id' );
+			$captured = $order->get_meta( '_nmi_charge_captured' );
 
-			if ( $charge ) {
+			if ( $charge && $captured == 'no' ) {
 				$args = array(
 					'command'	=> 'void',
 					'refnum'	=> $order->get_transaction_id(),
 				);
-				$args = apply_filters( 'wc_usaepay_request_args', $args, $order );
+				$args = apply_filters( 'wc_usaepay_cancel_payment_request_args', $args, $order );
 
 				$response = $gateway->usaepay_request( $args );
 
