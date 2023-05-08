@@ -66,7 +66,7 @@ A valid SSL certificate is required to ensure your customer credit card details 
 
 = 4.1.1 =
 * Fixed processing cancel payment
-* Updated "WC tested up to" header to 7.6
+* Updated "WC tested up to" header to 7.7
 
 = 4.1.0 =
 * Added AVS and CVV responses to order notes
