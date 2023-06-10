@@ -352,6 +352,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 			$order->update_meta_data( '_usaepay_charge_id', $response['refnum'] );
 			$order->update_meta_data( '_usaepay_authorization_code', $response['authcode'] );
 			$order->update_meta_data( '_usaepay_cc_last4', substr( wc_clean( $_POST['usaepay-card-number'] ), -4 ) );
+			$order->update_meta_data( '_usaepay_cc_type', $this->get_card_type( wc_clean( $_POST['usaepay-card-number'] ) ) );
 
 			$order->set_transaction_id( $response['refnum'] );
 

@@ -2,8 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Payment Gateway for USAePay on WooCommerce\n"
-"POT-Creation-Date: 2023-05-08 20:40+0530\n"
-"PO-Revision-Date: 2023-05-08 20:40+0530\n"
+"POT-Creation-Date: 2023-06-10 19:56+0530\n"
+"PO-Revision-Date: 2023-06-10 19:56+0530\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -20,6 +20,7 @@ msgstr ""
 "_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
+"X-Poedit-SearchPathExcluded-1: vendor\n"
 
 #: gateway.php:102
 msgid "Settings"
@@ -29,49 +30,56 @@ msgstr ""
 msgid "Support"
 msgstr ""
 
-#: gateway.php:168
+#: gateway.php:172
+#, php-format
+msgid ""
+"Need a new merchant account, or looking to lower your processing fees? <a "
+"href=\"%s\" target=\"_blank\">Discuss your requirements with us.</a>"
+msgstr ""
+
+#: gateway.php:177
 #, php-format
 msgid ""
 "USAePay is almost ready. To get started, <a href=\"%s\">set your USAePay "
 "account keys</a>."
 msgstr ""
 
-#: gateway.php:206
+#: gateway.php:215
 #, php-format
 msgid ""
 "WooCommerce USAePay - The minimum PHP version required for this plugin is "
 "%1$s. You are running %2$s."
 msgstr ""
 
-#: gateway.php:211
+#: gateway.php:220
 msgid "WooCommerce USAePay requires WooCommerce to be activated to work."
 msgstr ""
 
-#: gateway.php:215
+#: gateway.php:224
 #, php-format
 msgid ""
 "WooCommerce USAePay - The minimum WooCommerce version required for this "
 "plugin is %1$s. You are running %2$s."
 msgstr ""
 
-#: gateway.php:220
+#: gateway.php:229
 msgid "WooCommerce USAePay - cURL is not installed."
 msgstr ""
 
-#: gateway.php:298
+#: gateway.php:307
 msgid "Unable to capture charge!"
 msgstr ""
 
-#: gateway.php:300
+#: gateway.php:309
 #, php-format
 msgid "USAePay charge complete (Charge ID: %s)"
 msgstr ""
 
-#: gateway.php:339
+#: gateway.php:348
 msgid "Unable to refund charge!"
 msgstr ""
 
-#: gateway.php:341
+#: gateway.php:350
 #, php-format
 msgid "USAePay charge refunded (Charge ID: %s)"
 msgstr ""
@@ -325,34 +333,34 @@ msgstr ""
 msgid "%1$s - Order %2$s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:368
+#: includes/class-wc-gateway-usaepay.php:369
 #, php-format
 msgid "USAePay charge complete (Charge ID: %s) %s %s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:382
+#: includes/class-wc-gateway-usaepay.php:383
 #, php-format
 msgid ""
 "USAePay charge authorized (Charge ID: %s). Process order to take payment, or "
 "cancel to remove the pre-authorization. %s %s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:403
 #: includes/class-wc-gateway-usaepay.php:404
+#: includes/class-wc-gateway-usaepay.php:405
 #, php-format
 msgid "Gateway Error: %s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:407
+#: includes/class-wc-gateway-usaepay.php:408
 #, php-format
 msgid "USAePay failure reason: %s %s %s"
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:456
+#: includes/class-wc-gateway-usaepay.php:457
 msgid "There was an error with the gateway response."
 msgstr ""
 
-#: includes/class-wc-gateway-usaepay.php:502
+#: includes/class-wc-gateway-usaepay.php:503
 #, php-format
 msgid "Refunded %s - Refund ID: %s - Reason: %s"
 msgstr ""
