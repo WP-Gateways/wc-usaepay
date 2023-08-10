@@ -9,7 +9,7 @@ Author URI: https://pledgedplugins.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 7.8
+WC tested up to: 8.0
 
 	Copyright: © Pledged Plugins.
 	License: GNU General Public License v3.0
@@ -128,7 +128,7 @@ class WC_USAePay {
         add_action( 'woocommerce_order_status_refunded', array( $this, 'cancel_payment' ) );
     }
 
-    /**
+	/**
      * Allow this class and other classes to add slug keyed notices (to avoid duplication)
      */
     public function add_admin_notice( $slug, $class, $message, $data_dismissible = '' ) {

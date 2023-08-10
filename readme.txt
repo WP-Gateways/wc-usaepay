@@ -5,7 +5,7 @@ Tags: woocommerce USAePay, USAePay, USA ePay, payment gateway, woocommerce, wooc
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Author URI: https://pledgedplugins.com
 Requires at least: 4.4
-Tested up to: 6.2
+Tested up to: 6.3
 Requires PHP: 5.6
 Stable tag: 4.1.2
 License: GPLv2 or later
@@ -67,7 +67,8 @@ A valid SSL certificate is required to ensure your customer credit card details 
 = 4.1.2 =
 * Added merchant account notice
 * Saved card type to order meta
-* Updated "WC tested up to" header to 7.8
+* Updated "WC tested up to" header to 8.0
+* Updated compatibility info to WordPress 6.3
 
 = 4.1.1 =
 * Fixed processing cancel payment

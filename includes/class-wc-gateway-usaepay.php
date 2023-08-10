@@ -31,11 +31,11 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->id                    = 'usaepay';
-		$this->method_title          = __( 'USAePay', 'wc-usaepay' );
-		$this->method_description 	 = sprintf( esc_html__( 'Live merchant accounts cannot be used in a sandbox environment, so to test the plugin, please make sure you are using a separate sandbox account. If you do not have a sandbox account, you can sign up for one from %shere%s.', 'wc-usaepay' ), '<a href="https://developer.usaepay.com/_developer/app/register" target="_blank">', '</a>' );
-		$this->has_fields            = true;
-		$this->supports              = array( 'products', 'refunds' );
+		$this->id                  	= 'usaepay';
+		$this->method_title         = __( 'USAePay', 'wc-usaepay' );
+		$this->method_description	= sprintf( esc_html__( 'Live merchant accounts cannot be used in a sandbox environment, so to test the plugin, please make sure you are using a separate sandbox account. If you do not have a sandbox account, you can sign up for one from %shere%s.', 'wc-usaepay' ), '<a href="https://developer.usaepay.com/_developer/app/register" target="_blank">', '</a>' );
+		$this->has_fields           = true;
+		$this->supports             = array( 'products', 'refunds' );
 
 		// Load the form fields
 		$this->init_form_fields();
@@ -224,7 +224,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'description' => __( '<strong>CAUTION! Enabling this option will write gateway requests possibly including card numbers and CVV to the logs.</strong> Do not turn this on unless you have a problem processing credit cards. You must only ever enable it temporarily for troubleshooting or to send requested information to the plugin author. It must be disabled straight away after the issues are resolved and the plugin logs should be deleted.', 'wc-usaepay' ) . ' ' . sprintf( __( '<a href="%s">Click here</a> to check and delete the full log file.', 'wc-usaepay' ), admin_url( 'admin.php?page=wc-status&tab=logs&log_file=' . WC_Log_Handler_File::get_log_file_name( 'woocommerce-gateway-usaepay' ) ) ),
 				'default'     => 'no',
 			),
-			'line_items'           => array(
+			'line_items' => array(
 				'title'       => __( 'Line Items', 'wc-usaepay' ),
 				'label'       => __( 'Enable Line Items', 'wc-usaepay' ),
 				'type'        => 'checkbox',
