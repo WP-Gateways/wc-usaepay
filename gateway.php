@@ -3,13 +3,13 @@
 Plugin Name: Payment Gateway for USAePay on WooCommerce
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Description: A payment gateway for USAePay. An USAePay account and a server with cURL, SSL support, and a valid SSL certificate is required (for security reasons) for this gateway to function. Requires WC 3.3+
-Version: 4.1.1
+Version: 4.1.2
 Author: Pledged Plugins
 Author URI: https://pledgedplugins.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 7.7
+WC tested up to: 8.0
 
 	Copyright: © Pledged Plugins.
 	License: GNU General Public License v3.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_USAEPAY_VERSION', '4.1.1' );
+define( 'WC_USAEPAY_VERSION', '4.1.2' );
 define( 'WC_USAEPAY_MIN_PHP_VER', '5.6.0' );
 define( 'WC_USAEPAY_MIN_WC_VER', '3.3' );
 define( 'WC_USAEPAY_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
@@ -128,14 +128,15 @@ class WC_USAePay {
         add_action( 'woocommerce_order_status_refunded', array( $this, 'cancel_payment' ) );
     }
 
-    /**
+	/**
      * Allow this class and other classes to add slug keyed notices (to avoid duplication)
      */
-    public function add_admin_notice( $slug, $class, $message ) {
-        $this->notices[$slug] = array(
-            'class'   => $class,
-            'message' => $message,
-        );
+    public function add_admin_notice( $slug, $class, $message, $data_dismissible = '' ) {
+	    $this->notices[ $slug ] = array(
+		    'class'            => $data_dismissible ? "$class is-dismissible" : $class,
+		    'message'          => $message,
+		    'data_dismissible' => $data_dismissible,
+	    );
     }
 
     /**
@@ -159,9 +160,17 @@ class WC_USAePay {
             return;
 		}
 
+	    require_once dirname( __FILE__ ) . '/vendor/persist-admin-notices-dismissal/persist-admin-notices-dismissal.php';
+	    PAnD::init();
+
         // Check if secret key present. Otherwise prompt, via notice, to go to setting.
 		$options = get_option( 'woocommerce_usaepay_settings' );
 		$secret = isset( $options['pin'] ) ? $options['pin'] : '';
+
+	    if ( PAnD::is_admin_notice_active( 'wp-gateways-merchant-account-forever' ) ) {
+		    $external_link = 'https://wpgateways.com/support/merchant-solutions/';
+		    $this->add_admin_notice( 'merchant_account', 'notice notice-info', sprintf( __( 'Need a new merchant account, or looking to lower your processing fees? <a href="%s" target="_blank">Discuss your requirements with us.</a>', 'wc-usaepay' ), $external_link ), 'wp-gateways-merchant-account-forever' );
+	    }
 
         if ( empty( $secret ) && !( isset( $_GET['page'], $_GET['section'] ) && 'wc-settings' === $_GET['page'] && 'usaepay' === $_GET['section'] ) ) {
             $setting_link = $this->settings_url();
@@ -227,9 +236,9 @@ class WC_USAePay {
      */
     public function admin_notices() {
 
-        foreach ( (array) $this->notices as $notice_key => $notice ) {
-			echo "<div class='" . esc_attr( $notice['class'] ) . "'><p>";
-			echo wp_kses( $notice['message'], array( 'a' => array( 'href' => array() ) ) );
+        foreach ( $this->notices as $notice_key => $notice ) {
+			echo "<div class='" . esc_attr( $notice['class'] ) . "' data-dismissible='" . esc_attr( $notice['data_dismissible'] ) . "'><p>";
+			echo wp_kses( $notice['message'], array( 'a' => array( 'href' => array(), 'target' => array() ) ) );
 			echo '</p></div>';
 		}
     }
