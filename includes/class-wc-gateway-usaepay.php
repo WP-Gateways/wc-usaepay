@@ -276,6 +276,22 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		echo '</div>';
 	}
 
+	public function javascript_params() {
+		$usaepay_params = array(
+			'allowed_card_types'    => $this->allowed_card_types,
+			'no_card_number_error'  => __( 'Enter a card number.', 'wc-usaepay' ),
+			'no_card_expiry_error'  => __( 'Enter an expiry date.', 'wc-usaepay' ),
+			'no_cvv_error'          => __( 'CVC code is required.', 'wc-usaepay' ),
+			'card_number_error' 	=> __( 'Invalid card number.', 'wc-usaepay' ),
+			'card_expiry_error' 	=> __( 'Invalid card expiry date.', 'wc-usaepay' ),
+			'card_cvc_error' 		=> __( 'Invalid card CVC.', 'wc-usaepay' ),
+			'placeholder_cvc'	 	=> __( 'CVC', 'woocommerce' ),
+			'placeholder_expiry' 	=> __( 'MM / YY', 'woocommerce' ),
+			'card_disallowed_error' => __( 'Card Type Not Accepted.', 'wc-usaepay' ),
+		);
+		return $usaepay_params;
+	}
+
 	/**
 	 * Process the payment
 	 */

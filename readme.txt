@@ -7,7 +7,7 @@ Author URI: https://pledgedplugins.com
 Requires at least: 4.4
 Tested up to: 6.4
 Requires PHP: 5.6
-Stable tag: 4.1.3
+Stable tag: 4.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,10 +64,10 @@ A valid SSL certificate is required to ensure your customer credit card details 
 
 == Changelog ==
 
-= 4.1.3 =
-* Updated "WC tested up to" header to 8.3
+= 4.2.0 =
+* Added checkout block payments support
+* Updated "WC tested up to" header to 8.5
 * Updated compatibility info to WordPress 6.4
-* Declared incompatibility with cart and checkout blocks
 
 = 4.1.2 =
 * Added merchant account notice
