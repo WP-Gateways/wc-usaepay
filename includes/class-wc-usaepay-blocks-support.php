@@ -65,11 +65,6 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 
 		$js_params = $this->get_gateway_javascript_params();
 
-		if ( ! empty( $js_params['client_key'] ) ) {
-			wp_enqueue_script( 'usaepay-accept', $js_params['accept_js_url'], '', null, true );
-			$dependencies = array_merge( [ 'usaepay-accept' ], $dependencies );
-		}
-
 		wp_enqueue_style(
 			'wc-usaepay-blocks-checkout-style',
 			WC_USAEPAY_PLUGIN_URL . '/build/style-index.css',
@@ -168,7 +163,7 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 	 * @return array Arrays of icons metadata.
 	 */
 	private function get_icons() {
-		$allowed_card_types = $this->settings['allowed_card_types'];
+		$allowed_card_types = (array) $this->settings['allowed_card_types'];
 		if ( in_array( 'visa', $allowed_card_types ) ) {
 			$icons_src['visa'] = [
 				'src' => WC_HTTPS::force_https_url( WC()->plugin_url() . '/assets/images/icons/credit-cards/visa.svg' ),
@@ -229,7 +224,7 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 	}
 
 	/**
-	 * Add Authorize.Net error response to block checkout
+	 * Add USAePay error response to block checkout
 	 *
 	 * @param PaymentContext $context Holds context for the payment.
 	 * @param PaymentResult $result Result object for the payment.

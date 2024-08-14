@@ -12,7 +12,7 @@ export const usePaymentProcessing = (
 ) => {
 
 	const [error, setError] = useState('');
-	const onUSAePayPayError = useCallback((message) => {
+	const onUSAePayError = useCallback((message) => {
 		console.log(message);
 		setError(message);
 		return message ? message : false;
@@ -64,12 +64,6 @@ export const usePaymentProcessing = (
 					'usaepay-card-cvc': cvc
 				};
 
-				usaepayArgs = {
-					'usaepay-card-number': cardNumber,
-					'usaepay-card-expiry': expiryDate,
-					'usaepay-card-cvc': cvc
-				};
-
 				return {
 					type: emitResponse.responseTypes.SUCCESS,
 					meta: {
@@ -99,7 +93,7 @@ export const usePaymentProcessing = (
 	}, [
 		onPaymentSetup,
 		billing.billingAddress,
-		onUSAePayPayError,
+		onUSAePayError,
 		error,
 		emitResponse.noticeContexts.PAYMENTS,
 		emitResponse.responseTypes.ERROR,
@@ -130,5 +124,5 @@ export const usePaymentProcessing = (
 		emitResponse.noticeContexts.PAYMENTS,
 		emitResponse.responseTypes.ERROR,
 	]);
-	return onUSAePayPayError;
+	return onUSAePayError;
 };

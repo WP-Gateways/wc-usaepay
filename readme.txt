@@ -5,11 +5,11 @@ Tags: woocommerce USAePay, USAePay, USA ePay, payment gateway, woocommerce, wooc
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Author URI: https://pledgedplugins.com
 Requires at least: 4.4
-Tested up to: 6.4
+Tested up to: 6.6
 Requires PHP: 5.6
 Stable tag: 4.2.0
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 This Payment Gateway For WooCommerce extends the functionality of WooCommerce to accept payments from credit/debit cards using the USAePay payment gateway. Since customers will be entering credit cards directly on your store you should sure that your checkout pages are protected by SSL.
 
@@ -45,7 +45,7 @@ This plugin is not affiliated with or supported by USAePay, WooCommerce.com or A
 
 Easy steps to install the plugin:
 
-1. Upload this folder to the `/wp-content/plugins/` directory.
+1. Upload `wc-usaepay-payment-gateway` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin (WordPress -> Plugins).
 3. Go to the WooCommerce settings page (WordPress -> WooCommerce -> Settings) and select the Payments tab.
 4. Under the Payments tab, you will find all the available payment methods. Find the 'USAePay' link in the list and click it.
@@ -53,7 +53,7 @@ Easy steps to install the plugin:
 6. Enable the method by using the checkbox.
 7. Enter the USAePay account details (Source Key, Pin).
 
-**IMPORTANT:** Live merchant accounts cannot be used in a sandbox environment, so to test the plugin, please make sure you are using a separate sandbox account. If you do not have a sandbox account, you can sign up for one from <https://developer.usaepay.com/_developer/app/register>. Check the USAePay testing guide from <https://help.usaepay.com/developer/sandbox> to generate various test scenarios before going live.
+**IMPORTANT:** Live merchant accounts cannot be used in a sandbox environment, so to test the plugin, please make sure you are using a separate sandbox account. If you do not have a sandbox account, you can sign up for one from <https://developer.usaepay.com/_developer/app/register>. Check the USAePay testing guide from <https://help.usaepay.info/developer/reference/testcards/> to generate various test scenarios before going live.
 
 That's it! You are ready to accept credit cards with your USAePay payment gateway now connected to WooCommerce.
 
@@ -66,8 +66,10 @@ A valid SSL certificate is required to ensure your customer credit card details 
 
 = 4.2.0 =
 * Added checkout block payments support
-* Updated "WC tested up to" header to 8.5
-* Updated compatibility info to WordPress 6.4
+* Added minor improvements in code base
+* Fixed Customer Receipt sending issue
+* Updated "WC tested up to" header to 9.2
+* Updated compatibility info to WordPress 6.6
 
 = 4.1.2 =
 * Added merchant account notice

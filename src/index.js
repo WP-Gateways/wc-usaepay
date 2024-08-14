@@ -44,7 +44,7 @@ const CreditCardComponent = ({
 	const [cvc, setCVC] = useState("");
 	const {PaymentMethodIcons} = components;
 
-	const onUSAePayPayError = usePaymentProcessing(
+	const onUSAePayError = usePaymentProcessing(
 		billing,
 		cardNumber,
 		expiryDate,
@@ -59,7 +59,7 @@ const CreditCardComponent = ({
 		//console.log(error);
 		//console.log(erroredInputs);
 		setCCError(error);
-		onUSAePayPayError(error);
+		onUSAePayError(error);
 		return true;
 	};
 

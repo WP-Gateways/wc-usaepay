@@ -59,7 +59,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		$this->customer_receipt   	= $this->get_option( 'customer_receipt' ) === 'yes';
 
 		if ( $this->testmode ) {
-			$this->description .= ' ' . sprintf( __( '<br /><br /><strong>TEST MODE ENABLED</strong><br /> In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date or check the documentation "<a href="%s">%s API</a>" for more card numbers.', 'wc-usaepay' ), 'https://help.usaepay.com/developer/sandbox', $this->method_title );
+			$this->description .= ' ' . sprintf( __( '<br /><br /><strong>TEST MODE ENABLED</strong><br /> In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date or check the documentation "<a href="%s">%s API</a>" for more card numbers.', 'wc-usaepay' ), 'https://help.usaepay.info/developer/reference/testcards/', $this->method_title );
 			$this->description  = trim( $this->description );
 		}
 
@@ -181,7 +181,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Sandbox mode', 'wc-usaepay' ),
 				'label'       => __( 'Enable Sandbox Mode', 'wc-usaepay' ),
 				'type'        => 'checkbox',
-				'description' => sprintf( esc_html__( 'Check the USAePay testing guide %shere%s. This will display "sandbox mode" warning on checkout.', 'wc-usaepay' ), '<a href="https://help.usaepay.com/developer/sandbox" target="_blank">', '</a>' ),
+				'description' => sprintf( esc_html__( 'Check the USAePay testing guide %shere%s. This will display "sandbox mode" warning on checkout.', 'wc-usaepay' ), '<a href="https://help.usaepay.info/developer/reference/testcards/" target="_blank">', '</a>' ),
 				'default'     => 'yes',
 			),
 			'source_key' => array(
@@ -333,7 +333,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'description'	=> $description,
 				'amount'		=> $order->get_total(),
 				'email'			=> $order->get_billing_email(),
-				'send_receipt'  => $this->customer_receipt,
+				'send_receipt'  => (int) $this->customer_receipt,
 				'clientip'		=> WC_Geolocation::get_ip_address(),
 				'save_card'		=> true,
 				'creditcard'	=> array(
@@ -356,6 +356,9 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				),
 				'ignore_duplicate' => 0,
 			);
+			if( ! $this->customer_receipt ) {
+				$payment_args['receipt-custemail'] = 'none';
+			}
 			$payment_args = apply_filters( 'wc_usaepay_process_payment_request_args', $payment_args, $order );
 
 			$response = $this->usaepay_request( $payment_args );

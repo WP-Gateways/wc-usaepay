@@ -9,11 +9,12 @@ Author URI: https://pledgedplugins.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 8.5
+WC tested up to: 9.2
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
+Requires Plugins: woocommerce
 
 	Copyright: © Pledged Plugins.
-	License: GNU General Public License v3.0
-	License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -99,14 +100,17 @@ class WC_USAePay {
 
     /**
 	 * Add relevant links to plugins page
-	 * @param  array $links
+	 *
+	 * @param array $links
+	 *
 	 * @return array
 	 */
 	public function plugin_action_links( $links ) {
 		$plugin_links = array(
-			'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=usaepay' ) . '">' . __( 'Settings', 'wc-usaepay' ) . '</a>',
+			'<a href="' . esc_url( $this->settings_url() ) . '">' . __( 'Settings', 'wc-usaepay' ) . '</a>',
 			'<a href="https://pledgedplugins.com/support/" target="_blank">' . __( 'Support', 'wc-usaepay' ) . '</a>',
 		);
+		
 		return array_merge( $plugin_links, $links );
 	}
 
@@ -114,7 +118,8 @@ class WC_USAePay {
      * Init localisations and files
      */
     public function init() {
-        // Don't hook anything else in the plugin if we're in an incompatible environment
+        
+		// Don't hook anything else in the plugin if we're in an incompatible environment
         if ( self::get_environment_warning() ) {
             return;
         }
@@ -178,7 +183,7 @@ class WC_USAePay {
 	    }
 
         if ( empty( $secret ) && !( isset( $_GET['page'], $_GET['section'] ) && 'wc-settings' === $_GET['page'] && 'usaepay' === $_GET['section'] ) ) {
-            $setting_link = $this->settings_url();
+            $setting_link = esc_url( $this->settings_url() );
             $this->add_admin_notice( 'prompt_connect', 'notice notice-warning', sprintf( __( 'USAePay is almost ready. To get started, <a href="%s">set your USAePay account keys</a>.', 'wc-usaepay' ), $setting_link ) );
         }
 
@@ -257,11 +262,14 @@ class WC_USAePay {
         if ( !class_exists( 'WC_Payment_Gateway' ) ) {
             return;
         }
+		
         // Includes
         if ( is_admin() ) {
             require_once dirname( __FILE__ ) . '/includes/class-wc-usaepay-privacy.php';
         }
+		
         include_once dirname( __FILE__ ) . '/includes/class-wc-gateway-usaepay.php';
+		
         load_plugin_textdomain( 'wc-usaepay', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
         add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
     }
