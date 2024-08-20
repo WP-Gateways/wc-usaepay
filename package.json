@@ -34,7 +34,6 @@
 		"/languages",
 		"/woo-includes",
 		"/updates",
-		"/vendor",
 		"gateway.php",
 		"block.json",
 		"readme.txt",

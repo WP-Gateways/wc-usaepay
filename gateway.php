@@ -154,7 +154,7 @@ class WC_USAePay {
             return;
 		}
 
-	    require_once dirname( __FILE__ ) . '/vendor/persist-admin-notices-dismissal/persist-admin-notices-dismissal.php';
+	    require_once dirname( __FILE__ ) . '/includes/persist-admin-notices-dismissal/persist-admin-notices-dismissal.php';
 	    PAnD::init();
 
         // Check if secret key present. Otherwise prompt, via notice, to go to setting.
