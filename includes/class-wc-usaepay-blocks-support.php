@@ -53,36 +53,16 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 		$asset_path   = WC_USAEPAY_PLUGIN_PATH . '/build/index.asset.php';
 		$version      = WC_USAEPAY_VERSION;
 		$dependencies = [];
-		if ( file_exists( $asset_path ) ) {
+		if( file_exists( $asset_path ) ) {
 			$asset        = require $asset_path;
-			$version      = is_array( $asset ) && isset( $asset['version'] )
-				? $asset['version']
-				: $version;
-			$dependencies = is_array( $asset ) && isset( $asset['dependencies'] )
-				? $asset['dependencies']
-				: $dependencies;
+			$version      = is_array( $asset ) && isset( $asset['version'] ) ? $asset['version'] : $version;
+			$dependencies = is_array( $asset ) && isset( $asset['dependencies'] ) ? $asset['dependencies'] : $dependencies;
 		}
 
-		$js_params = $this->get_gateway_javascript_params();
+		wp_enqueue_style( 'wc-usaepay-blocks-checkout-style', WC_USAEPAY_PLUGIN_URL . '/build/style-index.css', [], $version );
 
-		wp_enqueue_style(
-			'wc-usaepay-blocks-checkout-style',
-			WC_USAEPAY_PLUGIN_URL . '/build/style-index.css',
-			[],
-			$version
-		);
-
-		wp_register_script(
-			'wc-usaepay-blocks-integration',
-			WC_USAEPAY_PLUGIN_URL . '/build/index.js',
-			$dependencies,
-			$version,
-			true
-		);
-		wp_set_script_translations(
-			'wc-usaepay-blocks-integration',
-			'wc-usaepay'
-		);
+		wp_register_script( 'wc-usaepay-blocks-integration', WC_USAEPAY_PLUGIN_URL . '/build/index.js', $dependencies, $version, true );
+		wp_set_script_translations( 'wc-usaepay-blocks-integration', 'wc-usaepay' );
 
 		return [ 'wc-usaepay-blocks-integration' ];
 	}
@@ -95,9 +75,7 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 	public function get_payment_method_data() {
 		// We need to call array_merge_recursive so the blocks 'button' setting doesn't overwrite
 		// what's provided from the gateway or payment request configuration.
-		return array_replace_recursive(
-			$this->get_gateway_javascript_params(),
-			// Blocks-specific options
+		return array_replace_recursive( $this->get_gateway_javascript_params(), // Blocks-specific options
 			[
 				'title'          => $this->get_title(),
 				'icons'          => $this->get_icons(),
@@ -105,8 +83,7 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 				'showSavedCards' => $this->get_show_saved_cards(),
 				'showSaveOption' => $this->get_show_save_option(),
 				'isAdmin'        => is_admin(),
-			]
-		);
+			] );
 	}
 
 	/**
@@ -118,14 +95,11 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 		$js_configuration = [];
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-		if ( isset( $gateways['usaepay'] ) ) {
+		if( isset( $gateways['usaepay'] ) ) {
 			$js_configuration = $gateways['usaepay']->javascript_params();
 		}
 
-		return apply_filters(
-			'wc_usaepay_params',
-			$js_configuration
-		);
+		return apply_filters( 'wc_usaepay_params', $js_configuration );
 	}
 
 	/**
@@ -163,40 +137,41 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 	 * @return array Arrays of icons metadata.
 	 */
 	private function get_icons() {
+		$icons_src          = [];
 		$allowed_card_types = (array) $this->settings['allowed_card_types'];
-		if ( in_array( 'visa', $allowed_card_types ) ) {
+		if( in_array( 'visa', $allowed_card_types ) ) {
 			$icons_src['visa'] = [
 				'src' => WC_HTTPS::force_https_url( WC()->plugin_url() . '/assets/images/icons/credit-cards/visa.svg' ),
 				'alt' => __( 'Visa', 'wc-usaepay' ),
 			];
 		}
-		if ( in_array( 'mastercard', $allowed_card_types ) ) {
+		if( in_array( 'mastercard', $allowed_card_types ) ) {
 			$icons_src['mastercard'] = [
 				'src' => WC_HTTPS::force_https_url( WC()->plugin_url() . '/assets/images/icons/credit-cards/mastercard.svg' ),
 				'alt' => __( 'Mastercard', 'wc-usaepay' ),
 			];
 		}
-		if ( in_array( 'amex', $allowed_card_types ) ) {
+		if( in_array( 'amex', $allowed_card_types ) ) {
 			$icons_src['amex'] = [
 				'src' => WC_HTTPS::force_https_url( WC()->plugin_url() . '/assets/images/icons/credit-cards/amex.svg' ),
 				'alt' => __( 'American Express', 'wc-usaepay' ),
 			];
 		}
 
-		if ( 'USD' === get_woocommerce_currency() ) {
-			if ( in_array( 'discover', $allowed_card_types ) ) {
+		if( 'USD' === get_woocommerce_currency() ) {
+			if( in_array( 'discover', $allowed_card_types ) ) {
 				$icons_src['discover'] = [
 					'src' => WC_HTTPS::force_https_url( WC()->plugin_url() . '/assets/images/icons/credit-cards/discover.svg' ),
 					'alt' => _x( 'Discover', 'Name of credit card', 'wc-usaepay' ),
 				];
 			}
-			if ( in_array( 'jcb', $allowed_card_types ) ) {
+			if( in_array( 'jcb', $allowed_card_types ) ) {
 				$icons_src['jcb'] = [
 					'src' => WC_HTTPS::force_https_url( WC()->plugin_url() . '/assets/images/icons/credit-cards/jcb.svg' ),
 					'alt' => __( 'JCB', 'wc-usaepay' ),
 				];
 			}
-			if ( in_array( 'diners-club', $allowed_card_types ) ) {
+			if( in_array( 'diners-club', $allowed_card_types ) ) {
 				$icons_src['diners'] = [
 					'src' => WC_HTTPS::force_https_url( WC()->plugin_url() . '/assets/images/icons/credit-cards/diners.svg' ),
 					'alt' => __( 'Diners', 'wc-usaepay' ),
@@ -214,7 +189,7 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 	 */
 	public function get_supported_features() {
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-		if ( isset( $gateways['usaepay'] ) ) {
+		if( isset( $gateways['usaepay'] ) ) {
 			$gateway = $gateways['usaepay'];
 
 			return array_filter( $gateway->supports, [ $gateway, 'supports' ] );
@@ -234,15 +209,12 @@ final class WC_USAePay_Blocks_Support extends AbstractPaymentMethodType {
 		// hook into usaepay error processing so that we can capture the error to
 		// payment details (which is added to notices and thus not helpful for
 		// this context).
-		if ( 'usaepay' === $context->payment_method ) {
-			add_action(
-				'wc_gateway_usaepay_process_payment_error',
-				function ( $error ) use ( &$result ) {
-					$payment_details                 = $result->payment_details;
-					$payment_details['errorMessage'] = wp_strip_all_tags( $error->getMessage() );
-					$result->set_payment_details( $payment_details );
-				}
-			);
+		if( 'usaepay' === $context->payment_method ) {
+			add_action( 'wc_gateway_usaepay_process_payment_error', function ( $error ) use ( &$result ) {
+				$payment_details                 = $result->payment_details;
+				$payment_details['errorMessage'] = wp_strip_all_tags( $error->getMessage() );
+				$result->set_payment_details( $payment_details );
+			} );
 		}
 	}
 }

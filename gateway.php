@@ -50,22 +50,6 @@ class WC_USAePay {
         return self::$instance;
     }
 
-    /**
-     * Flag to indicate whether or not we need to load code for / support subscriptions.
-     *
-     * @var bool
-     */
-    private $subscription_support_enabled = false;
-
-    /**
-     * Flag to indicate whether or not we need to load support for pre-orders.
-     *
-     * @since 3.0.3
-     *
-     * @var bool
-     */
-    private $pre_order_enabled = false;
-
 	/**
      * Notices (array)
      * @var array
@@ -110,7 +94,7 @@ class WC_USAePay {
 			'<a href="' . esc_url( $this->settings_url() ) . '">' . __( 'Settings', 'wc-usaepay' ) . '</a>',
 			'<a href="https://pledgedplugins.com/support/" target="_blank">' . __( 'Support', 'wc-usaepay' ) . '</a>',
 		);
-		
+
 		return array_merge( $plugin_links, $links );
 	}
 
@@ -118,7 +102,7 @@ class WC_USAePay {
      * Init localisations and files
      */
     public function init() {
-        
+
 		// Don't hook anything else in the plugin if we're in an incompatible environment
         if ( self::get_environment_warning() ) {
             return;
@@ -246,7 +230,7 @@ class WC_USAePay {
      */
     public function admin_notices() {
 
-        foreach ( $this->notices as $notice_key => $notice ) {
+        foreach ( $this->notices as $notice ) {
 			echo "<div class='" . esc_attr( $notice['class'] ) . "' data-dismissible='" . esc_attr( $notice['data_dismissible'] ) . "'><p>";
 			echo wp_kses( $notice['message'], array( 'a' => array( 'href' => array(), 'target' => array() ) ) );
 			echo '</p></div>';
@@ -262,14 +246,14 @@ class WC_USAePay {
         if ( !class_exists( 'WC_Payment_Gateway' ) ) {
             return;
         }
-		
+
         // Includes
         if ( is_admin() ) {
             require_once dirname( __FILE__ ) . '/includes/class-wc-usaepay-privacy.php';
         }
-		
+
         include_once dirname( __FILE__ ) . '/includes/class-wc-gateway-usaepay.php';
-		
+
         load_plugin_textdomain( 'wc-usaepay', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
         add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
     }
@@ -287,7 +271,9 @@ class WC_USAePay {
 	/**
 	 * Capture payment when the order is changed from on-hold to complete or processing
 	 *
-	 * @param  int $order_id
+	 * @param int $order_id
+	 *
+	 * @throws WC_Data_Exception
 	 */
 	public function capture_payment( $order_id ) {
 		$order = wc_get_order( $order_id );

@@ -27,7 +27,6 @@ export const usePaymentProcessing = (
 
 		const onSubmit = async () => {
 			try {
-				const billingAddress = billing.billingAddress;
 				// if there's an error return that.
 				if (error) {
 					console.log('returning');
@@ -36,25 +35,7 @@ export const usePaymentProcessing = (
 						message: error,
 					};
 				}
-				const ownerInfo = {
-					address: {
-						line1: billingAddress.address_1,
-						line2: billingAddress.address_2,
-						city: billingAddress.city,
-						state: billingAddress.state,
-						postal_code: billingAddress.postcode,
-						country: billingAddress.country,
-					},
-				};
-				if (billingAddress.phone) {
-					ownerInfo.phone = billingAddress.phone;
-				}
-				if (billingAddress.email) {
-					ownerInfo.email = billingAddress.email;
-				}
-				if (billingAddress.first_name || billingAddress.last_name) {
-					ownerInfo.name = `${billingAddress.first_name} ${billingAddress.last_name}`;
-				}
+				const billingAddress = billing.billingAddress;
 
 				let usaepayArgs = {};
 
@@ -69,7 +50,7 @@ export const usePaymentProcessing = (
 					meta: {
 						paymentMethodData: {
 							...usaepayArgs,
-							billing_email: ownerInfo.email,
+							billing_email: billingAddress.email,
 							billing_first_name: billingAddress?.first_name ?? '',
 							billing_last_name: billingAddress?.last_name ?? '',
 							paymentMethod: PAYMENT_METHOD_NAME,

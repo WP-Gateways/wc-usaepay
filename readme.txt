@@ -1,7 +1,7 @@
 === Payment Gateway for USAePay on WooCommerce ===
 Contributors: mohsinoffline
 Donate link: https://wpgateways.com/support/send-payment/
-Tags: woocommerce USAePay, USAePay, USA ePay, payment gateway, woocommerce, woocommerce payment gateway
+Tags: USAePay, payment gateway, woocommerce, secure, blocks
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Author URI: https://pledgedplugins.com
 Requires at least: 4.4

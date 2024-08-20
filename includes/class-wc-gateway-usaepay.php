@@ -121,15 +121,15 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-        // Show message if enabled and FORCE SSL is disabled and WordpressHTTPS plugin is not detected
-        if ( ! wc_checkout_is_https() ) {
-            echo  '<div class="notice notice-warning"><p>' . sprintf( __( 'USAePay is enabled, but a SSL certificate is not detected. Your checkout may not be secure! Please ensure your server has a valid <a href="%1$s" target="_blank">SSL certificate</a>', 'wc-usaepay' ), 'https://en.wikipedia.org/wiki/Transport_Layer_Security' ) . '</p></div>';
-        }
-
 		if ( ! $this->currency_is_accepted() ) {
 			echo '<div class="error"><p>' . __( 'USAePay supports only USD currency.', 'wc-usaepay' ) . '</p></div>';
 			return;
 		}
+
+        // Show message if enabled and FORCE SSL is disabled and WordpressHTTPS plugin is not detected
+        if ( ! wc_checkout_is_https() ) {
+            echo  '<div class="notice notice-warning"><p>' . sprintf( __( 'USAePay is enabled, but a SSL certificate is not detected. Your checkout may not be secure! Please ensure your server has a valid <a href="%1$s" target="_blank">SSL certificate</a>', 'wc-usaepay' ), 'https://en.wikipedia.org/wiki/Transport_Layer_Security' ) . '</p></div>';
+        }
 	}
 
 	/**
@@ -277,7 +277,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 	}
 
 	public function javascript_params() {
-		$usaepay_params = array(
+		return array(
 			'allowed_card_types'    => $this->allowed_card_types,
 			'no_card_number_error'  => __( 'Enter a card number.', 'wc-usaepay' ),
 			'no_card_expiry_error'  => __( 'Enter an expiry date.', 'wc-usaepay' ),
@@ -289,7 +289,6 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 			'placeholder_expiry' 	=> __( 'MM / YY', 'woocommerce' ),
 			'card_disallowed_error' => __( 'Card Type Not Accepted.', 'wc-usaepay' ),
 		);
-		return $usaepay_params;
 	}
 
 	/**
