@@ -3,26 +3,28 @@
 Plugin Name: Payment Gateway for USAePay on WooCommerce
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Description: A payment gateway for USAePay. An USAePay account and a server with cURL, SSL support, and a valid SSL certificate is required (for security reasons) for this gateway to function. Requires WC 3.3+
-Version: 4.1.2
+Version: 4.2.0
 Author: Pledged Plugins
 Author URI: https://pledgedplugins.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 8.0
+WC tested up to: 9.2
+License: GPLv3
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
+Requires Plugins: woocommerce
 
 	Copyright: © Pledged Plugins.
-	License: GNU General Public License v3.0
-	License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_USAEPAY_VERSION', '4.1.2' );
+define( 'WC_USAEPAY_VERSION', '4.2.0' );
 define( 'WC_USAEPAY_MIN_PHP_VER', '5.6.0' );
 define( 'WC_USAEPAY_MIN_WC_VER', '3.3' );
+define( 'WC_USAEPAY_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'WC_USAEPAY_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 define( 'WC_USAEPAY_MAIN_FILE', __FILE__ );
 
@@ -48,22 +50,6 @@ class WC_USAePay {
         return self::$instance;
     }
 
-    /**
-     * Flag to indicate whether or not we need to load code for / support subscriptions.
-     *
-     * @var bool
-     */
-    private $subscription_support_enabled = false;
-
-    /**
-     * Flag to indicate whether or not we need to load support for pre-orders.
-     *
-     * @since 3.0.3
-     *
-     * @var bool
-     */
-    private $pre_order_enabled = false;
-
 	/**
      * Notices (array)
      * @var array
@@ -75,10 +61,14 @@ class WC_USAePay {
      */
     public function __construct() {
 
-		// Declaring HPOS feature compatibility
 		add_action( 'before_woocommerce_init', function() {
+			// Declaring HPOS feature compatibility
 			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
 				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			}
+			// Declaring cart and checkout blocks compatibility
+			if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
 			}
 		} );
 
@@ -94,14 +84,17 @@ class WC_USAePay {
 
     /**
 	 * Add relevant links to plugins page
-	 * @param  array $links
+	 *
+	 * @param array $links
+	 *
 	 * @return array
 	 */
 	public function plugin_action_links( $links ) {
 		$plugin_links = array(
-			'<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=usaepay' ) . '">' . __( 'Settings', 'wc-usaepay' ) . '</a>',
+			'<a href="' . esc_url( $this->settings_url() ) . '">' . __( 'Settings', 'wc-usaepay' ) . '</a>',
 			'<a href="https://pledgedplugins.com/support/" target="_blank">' . __( 'Support', 'wc-usaepay' ) . '</a>',
 		);
+
 		return array_merge( $plugin_links, $links );
 	}
 
@@ -109,7 +102,8 @@ class WC_USAePay {
      * Init localisations and files
      */
     public function init() {
-        // Don't hook anything else in the plugin if we're in an incompatible environment
+
+		// Don't hook anything else in the plugin if we're in an incompatible environment
         if ( self::get_environment_warning() ) {
             return;
         }
@@ -160,7 +154,7 @@ class WC_USAePay {
             return;
 		}
 
-	    require_once dirname( __FILE__ ) . '/vendor/persist-admin-notices-dismissal/persist-admin-notices-dismissal.php';
+	    require_once dirname( __FILE__ ) . '/includes/persist-admin-notices-dismissal/persist-admin-notices-dismissal.php';
 	    PAnD::init();
 
         // Check if secret key present. Otherwise prompt, via notice, to go to setting.
@@ -173,7 +167,7 @@ class WC_USAePay {
 	    }
 
         if ( empty( $secret ) && !( isset( $_GET['page'], $_GET['section'] ) && 'wc-settings' === $_GET['page'] && 'usaepay' === $_GET['section'] ) ) {
-            $setting_link = $this->settings_url();
+            $setting_link = esc_url( $this->settings_url() );
             $this->add_admin_notice( 'prompt_connect', 'notice notice-warning', sprintf( __( 'USAePay is almost ready. To get started, <a href="%s">set your USAePay account keys</a>.', 'wc-usaepay' ), $setting_link ) );
         }
 
@@ -236,7 +230,7 @@ class WC_USAePay {
      */
     public function admin_notices() {
 
-        foreach ( $this->notices as $notice_key => $notice ) {
+        foreach ( $this->notices as $notice ) {
 			echo "<div class='" . esc_attr( $notice['class'] ) . "' data-dismissible='" . esc_attr( $notice['data_dismissible'] ) . "'><p>";
 			echo wp_kses( $notice['message'], array( 'a' => array( 'href' => array(), 'target' => array() ) ) );
 			echo '</p></div>';
@@ -252,11 +246,14 @@ class WC_USAePay {
         if ( !class_exists( 'WC_Payment_Gateway' ) ) {
             return;
         }
+
         // Includes
         if ( is_admin() ) {
             require_once dirname( __FILE__ ) . '/includes/class-wc-usaepay-privacy.php';
         }
+
         include_once dirname( __FILE__ ) . '/includes/class-wc-gateway-usaepay.php';
+
         load_plugin_textdomain( 'wc-usaepay', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
         add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
     }
@@ -274,7 +271,9 @@ class WC_USAePay {
 	/**
 	 * Capture payment when the order is changed from on-hold to complete or processing
 	 *
-	 * @param  int $order_id
+	 * @param int $order_id
+	 *
+	 * @throws WC_Data_Exception
 	 */
 	public function capture_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -361,3 +360,34 @@ class WC_USAePay {
 
 }
 $GLOBALS['wc_usaepay'] = WC_USAePay::get_instance();
+
+// Hook in Blocks integration. This action is called in a callback on plugins loaded, so current usaepay plugin class
+// implementation is too late.
+add_action( 'woocommerce_blocks_loaded', 'woocommerce_gateway_usaepay_woocommerce_block_support' );
+
+function woocommerce_gateway_usaepay_woocommerce_block_support() {
+	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+		require_once dirname( __FILE__ ) . '/includes/class-wc-usaepay-blocks-support.php';
+		// priority is important here because this ensures this integration is
+		// registered before the WooCommerce Blocks built-in usaepay registration.
+		// Blocks code has a check in place to only register if 'usaepay' is not
+		// already registered.
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				$container = Automattic\WooCommerce\Blocks\Package::container();
+				// registers as shared instance.
+				$container->register(
+					WC_USAePay_Blocks_Support::class,
+					function() {
+						return new WC_USAePay_Blocks_Support();
+					}
+				);
+				$payment_method_registry->register(
+					$container->get( WC_USAePay_Blocks_Support::class )
+				);
+			},
+			5
+		);
+	}
+}

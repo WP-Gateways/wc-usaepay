@@ -59,7 +59,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		$this->customer_receipt   	= $this->get_option( 'customer_receipt' ) === 'yes';
 
 		if ( $this->testmode ) {
-			$this->description .= ' ' . sprintf( __( '<br /><br /><strong>TEST MODE ENABLED</strong><br /> In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date or check the documentation "<a href="%s">%s API</a>" for more card numbers.', 'wc-usaepay' ), 'https://help.usaepay.com/developer/sandbox', $this->method_title );
+			$this->description .= ' ' . sprintf( __( '<br /><br /><strong>TEST MODE ENABLED</strong><br /> In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date or check the documentation "<a href="%s">%s API</a>" for more card numbers.', 'wc-usaepay' ), 'https://help.usaepay.info/developer/reference/testcards/', $this->method_title );
 			$this->description  = trim( $this->description );
 		}
 
@@ -121,15 +121,15 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-        // Show message if enabled and FORCE SSL is disabled and WordpressHTTPS plugin is not detected
-        if ( ! wc_checkout_is_https() ) {
-            echo  '<div class="notice notice-warning"><p>' . sprintf( __( 'USAePay is enabled, but a SSL certificate is not detected. Your checkout may not be secure! Please ensure your server has a valid <a href="%1$s" target="_blank">SSL certificate</a>', 'wc-usaepay' ), 'https://en.wikipedia.org/wiki/Transport_Layer_Security' ) . '</p></div>';
-        }
-
 		if ( ! $this->currency_is_accepted() ) {
 			echo '<div class="error"><p>' . __( 'USAePay supports only USD currency.', 'wc-usaepay' ) . '</p></div>';
 			return;
 		}
+
+        // Show message if enabled and FORCE SSL is disabled and WordpressHTTPS plugin is not detected
+        if ( ! wc_checkout_is_https() ) {
+            echo  '<div class="notice notice-warning"><p>' . sprintf( __( 'USAePay is enabled, but a SSL certificate is not detected. Your checkout may not be secure! Please ensure your server has a valid <a href="%1$s" target="_blank">SSL certificate</a>', 'wc-usaepay' ), 'https://en.wikipedia.org/wiki/Transport_Layer_Security' ) . '</p></div>';
+        }
 	}
 
 	/**
@@ -181,7 +181,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Sandbox mode', 'wc-usaepay' ),
 				'label'       => __( 'Enable Sandbox Mode', 'wc-usaepay' ),
 				'type'        => 'checkbox',
-				'description' => sprintf( esc_html__( 'Check the USAePay testing guide %shere%s. This will display "sandbox mode" warning on checkout.', 'wc-usaepay' ), '<a href="https://help.usaepay.com/developer/sandbox" target="_blank">', '</a>' ),
+				'description' => sprintf( esc_html__( 'Check the USAePay testing guide %shere%s. This will display "sandbox mode" warning on checkout.', 'wc-usaepay' ), '<a href="https://help.usaepay.info/developer/reference/testcards/" target="_blank">', '</a>' ),
 				'default'     => 'yes',
 			),
 			'source_key' => array(
@@ -276,6 +276,21 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		echo '</div>';
 	}
 
+	public function javascript_params() {
+		return array(
+			'allowed_card_types'    => $this->allowed_card_types,
+			'no_card_number_error'  => __( 'Enter a card number.', 'wc-usaepay' ),
+			'no_card_expiry_error'  => __( 'Enter an expiry date.', 'wc-usaepay' ),
+			'no_cvv_error'          => __( 'CVC code is required.', 'wc-usaepay' ),
+			'card_number_error' 	=> __( 'Invalid card number.', 'wc-usaepay' ),
+			'card_expiry_error' 	=> __( 'Invalid card expiry date.', 'wc-usaepay' ),
+			'card_cvc_error' 		=> __( 'Invalid card CVC.', 'wc-usaepay' ),
+			'placeholder_cvc'	 	=> __( 'CVC', 'woocommerce' ),
+			'placeholder_expiry' 	=> __( 'MM / YY', 'woocommerce' ),
+			'card_disallowed_error' => __( 'Card Type Not Accepted.', 'wc-usaepay' ),
+		);
+	}
+
 	/**
 	 * Process the payment
 	 */
@@ -317,7 +332,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'description'	=> $description,
 				'amount'		=> $order->get_total(),
 				'email'			=> $order->get_billing_email(),
-				'send_receipt'  => $this->customer_receipt,
+				'send_receipt'  => (int) $this->customer_receipt,
 				'clientip'		=> WC_Geolocation::get_ip_address(),
 				'save_card'		=> true,
 				'creditcard'	=> array(
@@ -340,6 +355,9 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				),
 				'ignore_duplicate' => 0,
 			);
+			if( ! $this->customer_receipt ) {
+				$payment_args['receipt-custemail'] = 'none';
+			}
 			$payment_args = apply_filters( 'wc_usaepay_process_payment_request_args', $payment_args, $order );
 
 			$response = $this->usaepay_request( $payment_args );

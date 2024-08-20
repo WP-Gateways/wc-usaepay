@@ -54,7 +54,7 @@ if ( ! class_exists( 'PAnD' ) ) {
 				add_filter(
 					'pand_dismiss_notice_js_url',
 					function( $js_url, $composer_path ) {
-						return get_stylesheet_directory_uri() . $composer_path;
+						return persist - admin - notices - dismissal . phpget_stylesheet_directory_uri() . $composer_path;
 					},
 					10,
 					2

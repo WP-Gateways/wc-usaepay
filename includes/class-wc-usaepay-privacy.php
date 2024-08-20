@@ -1,9 +1,11 @@
 <?php
+
 if ( ! class_exists( 'WC_Abstract_Privacy' ) ) {
 	return;
 }
 
 class WC_USAePay_Privacy extends WC_Abstract_Privacy {
+
 	/**
 	 * Constructor
 	 */
@@ -71,7 +73,7 @@ class WC_USAePay_Privacy extends WC_Abstract_Privacy {
 	 *
 	 */
 	public function get_privacy_message() {
-		return wpautop( sprintf( __( 'By using this extension, you may be storing personal data or sharing data with an external service. <a href="%s" target="_blank">Learn more about how this works, including what you may want to include in your privacy policy.</a>', 'wc-usaepay' ), 'https://docs.woocommerce.com/document/privacy-payments/' ) );
+		return wpautop( sprintf( __( 'By using this extension, you may be storing personal data or sharing data with an external service. <a href="%s" target="_blank">Learn more about how this works, including what you may want to include in your privacy policy.</a>', 'wc-usaepay' ), 'https://woocommerce.com/document/privacy-payments/' ) );
 	}
 
 	/**
@@ -177,12 +179,15 @@ class WC_USAePay_Privacy extends WC_Abstract_Privacy {
 	 *
 	 */
 	public function is_retention_expired( $created_date ) {
+
 		$retention  = wc_parse_relative_date_option( get_option( 'woocommerce_gateway_usaepay_retention' ) );
 		$is_expired = false;
 		$time_span  = time() - strtotime( $created_date );
+
 		if ( empty( $retention ) || empty( $created_date ) ) {
 			return false;
 		}
+
 		switch ( $retention['unit'] ) {
 			case 'days':
 				$retention = $retention['number'] * DAY_IN_SECONDS;
@@ -211,5 +216,6 @@ class WC_USAePay_Privacy extends WC_Abstract_Privacy {
 		}
 		return $is_expired;
 	}
+
 }
 new WC_USAePay_Privacy();
