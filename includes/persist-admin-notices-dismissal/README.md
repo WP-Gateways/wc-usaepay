@@ -118,7 +118,7 @@ The `pand_theme_loader` runs the following hook if `true`. You can directly chan
 add_filter(
 	'pand_dismiss_notice_js_url',
 	function( $js_url, $composer_path ) {
-		return README.mdget_stylesheet_directory_uri() . $composer_path;
+		return get_stylesheet_directory_uri() . $composer_path;
 	},
 	10,
 	2
