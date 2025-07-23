@@ -3,13 +3,13 @@
 Plugin Name: Payment Gateway for USAePay on WooCommerce
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Description: A payment gateway for USAePay. An USAePay account and a server with cURL, SSL support, and a valid SSL certificate is required (for security reasons) for this gateway to function. Requires WC 3.3+
-Version: 4.2.0
+Version: 4.2.1
 Author: Pledged Plugins
 Author URI: https://pledgedplugins.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 9.2
+WC tested up to: 10.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Requires Plugins: woocommerce
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_USAEPAY_VERSION', '4.2.0' );
+define( 'WC_USAEPAY_VERSION', '4.2.1' );
 define( 'WC_USAEPAY_MIN_PHP_VER', '5.6.0' );
 define( 'WC_USAEPAY_MIN_WC_VER', '3.3' );
 define( 'WC_USAEPAY_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
@@ -75,7 +75,7 @@ class WC_USAePay {
         // Actions
         add_action( 'admin_init', array( $this, 'check_environment' ) );
         add_action( 'admin_notices', array( $this, 'admin_notices' ), 15 );
-        add_action( 'plugins_loaded', array( $this, 'init' ) );
+        add_action( 'plugins_loaded', array( $this, 'init_environment' ) );
     }
 
     public function settings_url() {
@@ -101,7 +101,7 @@ class WC_USAePay {
     /**
      * Init localisations and files
      */
-    public function init() {
+    public function init_environment() {
 
 		// Don't hook anything else in the plugin if we're in an incompatible environment
         if ( self::get_environment_warning() ) {
@@ -115,9 +115,16 @@ class WC_USAePay {
         require_once dirname( __FILE__ ) . '/includes/class-wc-gateway-usaepay-logger.php';
 
         add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_action_links' ), 11 );
+		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 
-        add_action( 'woocommerce_order_status_processing', array( $this, 'capture_payment' ) );
-        add_action( 'woocommerce_order_status_completed', array( $this, 'capture_payment' ) );
+		if( version_compare( WC_VERSION, '8.4.0', '<' ) ) {
+			add_action( 'woocommerce_order_status_processing', array( $this, 'capture_payment' ), 10, 2 );
+			add_action( 'woocommerce_order_status_completed', array( $this, 'capture_payment' ), 10, 2 );
+		} else {
+			add_action( 'woocommerce_order_status_processing', array( $this, 'capture_payment' ), 10, 3 );
+			add_action( 'woocommerce_order_status_completed', array( $this, 'capture_payment' ), 10, 3 );
+		}
+
         add_action( 'woocommerce_order_status_cancelled', array( $this, 'cancel_payment' ) );
         add_action( 'woocommerce_order_status_refunded', array( $this, 'cancel_payment' ) );
     }
@@ -254,7 +261,6 @@ class WC_USAePay {
 
         include_once dirname( __FILE__ ) . '/includes/class-wc-gateway-usaepay.php';
 
-        load_plugin_textdomain( 'wc-usaepay', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
         add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
     }
 
@@ -268,24 +274,28 @@ class WC_USAePay {
         return $methods;
     }
 
+	public function load_plugin_textdomain() {
+		load_plugin_textdomain( 'wc-usaepay', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+	}
+
 	/**
 	 * Capture payment when the order is changed from on-hold to complete or processing
 	 *
 	 * @param int $order_id
-	 *
-	 * @throws WC_Data_Exception
+	 * @param $order
+	 * @param $status_transition
 	 */
-	public function capture_payment( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$gateway = new WC_Gateway_USAePay();
-
-		$gateway->log( "Info: Beginning capture payment for order $order_id for the amount of {$order->get_total()}" );
+	public function capture_payment( $order_id, $order, $status_transition = array() ) {
 
 		if ( $order->get_payment_method() == 'usaepay' ) {
 			$charge   = $order->get_meta( '_usaepay_charge_id' );
 			$captured = $order->get_meta( '_usaepay_charge_captured' );
 
-			if ( $charge && $captured == 'no' ) {
+			$gateway = new WC_Gateway_USAePay();
+
+			if ( apply_filters( 'wc_usaepay_capture_on_status_change', $gateway->capture_on_status_change, $order, $status_transition ) && $charge && $captured == 'no' ) {
+
+				$gateway->log( "Info: Beginning capture payment for order $order_id for the amount of {$order->get_total()}" );
 
 				$order_total = $order->get_total();
 
@@ -303,11 +313,17 @@ class WC_USAePay {
 				$response = $gateway->usaepay_request( $args );
 
 				if ( is_wp_error( $response ) ) {
-					$order->add_order_note( __( 'Unable to capture charge!', 'wc-usaepay' ) . ' ' . $response->get_error_message() );
+					if( $order->get_meta( '_usaepay_capture_failed' ) == 'yes' ) {
+						$order->add_order_note( sprintf( __( "<strong>Unable to capture charge!</strong> Please <strong>DO NOT FULFIL THE ORDER</strong> if the amount cannot be captured in the gateway account manually or by changing the status. In that case, set status to Failed manually and do not fulfil. \n\nUSAePay failure reason: %s \n\n", 'wc-usaepay' ), $response->get_error_message() ) );
+					} else {
+						$order->update_status( 'failed', sprintf( __( "<strong>Unable to capture charge!</strong> The order status is set to <strong>Failed</strong> the first time to draw your attention. If the next attempt fails, your intended order status will still take place. \n\nPlease double-check that the amount is captured in the gateway account before fulfilling the order. \n\nUSAePay failure reason: %s \n\n", 'wc-usaepay' ), $response->get_error_message() ) );
+						$order->update_meta_data( '_usaepay_capture_failed', 'yes' );
+						$order->save();
+					}
 				} else {
-					$complete_message = sprintf( __( 'USAePay charge complete (Charge ID: %s)', 'wc-usaepay' ), $response['refnum'] );
+					$complete_message = sprintf( __( 'USAePay charge captured for %s (Charge ID: %s).', 'wc-usaepay' ), wc_price( $args['amount'], array( 'currency' => $order->get_currency() ) ), $response['refnum'] );
  					$order->add_order_note( $complete_message );
-					$gateway->log( "Success: $complete_message" );
+					$gateway->log( 'Success: ' . wp_strip_all_tags( $complete_message ) );
 
 					$order->update_meta_data( '_usaepay_charge_captured', 'yes' );
 					$order->update_meta_data( 'USAePay Payment ID', $response['refnum'] );
@@ -346,7 +362,7 @@ class WC_USAePay {
 				if ( is_wp_error( $response ) ) {
 					$order->add_order_note( __( 'Unable to refund charge!', 'wc-usaepay' ) . ' ' . $response->get_error_message() );
 				} else {
-					$cancel_message = sprintf( __( 'USAePay charge refunded (Charge ID: %s)', 'wc-usaepay' ), $response['refnum'] );
+					$cancel_message = sprintf( __( 'USAePay charge refunded (Charge ID: %s).', 'wc-usaepay' ), $response['refnum'] );
  					$order->add_order_note( $cancel_message );
 					$gateway->log( "Success: $cancel_message" );
 
