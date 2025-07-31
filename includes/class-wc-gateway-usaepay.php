@@ -13,6 +13,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 
 	public $testmode;
 	public $capture;
+	public $capture_on_status_change;
 	public $source_key;
 	public $pin;
 	public $logging;
@@ -44,19 +45,20 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		$this->init_settings();
 
 		// Get setting values.
-		$this->title       		  	= $this->get_option( 'title' );
-		$this->description 		  	= $this->get_option( 'description' );
-		$this->enabled     		  	= $this->get_option( 'enabled' );
-		$this->testmode    		  	= $this->get_option( 'testmode' ) === 'yes';
-		$this->capture     		  	= $this->get_option( 'capture', 'yes' ) === 'yes';
-		$this->statement_descriptor = $this->get_option( 'statement_descriptor', wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) );
-		$this->source_key	   		= $this->get_option( 'source_key' );
-		$this->pin	  				= $this->get_option( 'pin' );
-		$this->logging     		  	= $this->get_option( 'logging' ) === 'yes';
-		$this->debugging   		  	= $this->get_option( 'debugging' ) === 'yes';
-		$this->line_items           = $this->get_option( 'line_items' ) === 'yes';
-		$this->allowed_card_types 	= $this->get_option( 'allowed_card_types', array() );
-		$this->customer_receipt   	= $this->get_option( 'customer_receipt' ) === 'yes';
+		$this->title       		  		= $this->get_option( 'title' );
+		$this->description 		  		= $this->get_option( 'description' );
+		$this->enabled     		  		= $this->get_option( 'enabled' );
+		$this->testmode    		  		= $this->get_option( 'testmode' ) === 'yes';
+		$this->capture     		  		= $this->get_option( 'capture', 'yes' ) === 'yes';
+		$this->capture_on_status_change = $this->get_option( 'capture_on_status_change', 'yes' ) === 'yes';
+		$this->statement_descriptor 	= $this->get_option( 'statement_descriptor', wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) );
+		$this->source_key	   			= $this->get_option( 'source_key' );
+		$this->pin	  					= $this->get_option( 'pin' );
+		$this->logging     		  		= $this->get_option( 'logging' ) === 'yes';
+		$this->debugging   		  		= $this->get_option( 'debugging' ) === 'yes';
+		$this->line_items           	= $this->get_option( 'line_items' ) === 'yes';
+		$this->allowed_card_types 		= $this->get_option( 'allowed_card_types', array() );
+		$this->customer_receipt   		= $this->get_option( 'customer_receipt' ) === 'yes';
 
 		if ( $this->testmode ) {
 			$this->description .= ' ' . sprintf( __( '<br /><br /><strong>TEST MODE ENABLED</strong><br /> In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date or check the documentation "<a href="%s">%s API</a>" for more card numbers.', 'wc-usaepay' ), 'https://help.usaepay.info/developer/reference/testcards/', $this->method_title );
@@ -130,6 +132,41 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
         if ( ! wc_checkout_is_https() ) {
             echo  '<div class="notice notice-warning"><p>' . sprintf( __( 'USAePay is enabled, but a SSL certificate is not detected. Your checkout may not be secure! Please ensure your server has a valid <a href="%1$s" target="_blank">SSL certificate</a>', 'wc-usaepay' ), 'https://en.wikipedia.org/wiki/Transport_Layer_Security' ) . '</p></div>';
         }
+	}
+
+	public function admin_options() { ?>
+		<script>
+            //alert(123);
+            jQuery( function( $ ) {
+                'use strict';
+
+                /**
+                 * Object to handle USAePay admin functions.
+                 */
+                let wc_usaepay_admin = {
+
+                    /**
+                     * Initialize.
+                     */
+                    init: function() {
+
+						$( document.body ).on( 'change', '#woocommerce_usaepay_capture', function() {
+                            let field_capture_on_status_change = $( '#woocommerce_usaepay_capture_on_status_change' ).parents( 'tr' ).eq( 0 );
+                            if ( $( this ).is( ':checked' ) ) {
+                                field_capture_on_status_change.hide();
+                            } else {
+                                field_capture_on_status_change.show();
+                            }
+                        });
+
+						$( '#woocommerce_usaepay_capture' ).change();
+                    }
+                };
+
+                wc_usaepay_admin.init();
+            } );
+        </script>
+		<?php parent::admin_options();
 	}
 
 	/**
@@ -210,6 +247,13 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'description' => __( 'Whether or not to immediately capture the charge. When unchecked, the charge issues an authorization and will need to be captured later.', 'wc-usaepay' ),
 				'default'     => 'yes',
 			),
+			'capture_on_status_change' => array(
+				'title'       => '',
+				'label'       => __( 'Capture authorized transaction on status change', 'wc-usaepay' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Whether or not to capture the authorized transaction when you change the order status from "On Hold" to "Processing" or "Completed". Disable if you prefer to capture transactions in the gateway dashboard.', 'wc-usaepay' ),
+				'default'     => 'yes'
+			),
 			'logging' => array(
 				'title'       => __( 'Logging', 'wc-usaepay' ),
 				'label'       => __( 'Log debug messages', 'wc-usaepay' ),
@@ -221,7 +265,7 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Gateway Debug', 'wc-usaepay' ),
 				'label'       => __( 'Log gateway requests and response to the WooCommerce System Status log.', 'wc-usaepay' ),
 				'type'        => 'checkbox',
-				'description' => __( '<strong>CAUTION! Enabling this option will write gateway requests possibly including card numbers and CVV to the logs.</strong> Do not turn this on unless you have a problem processing credit cards. You must only ever enable it temporarily for troubleshooting or to send requested information to the plugin author. It must be disabled straight away after the issues are resolved and the plugin logs should be deleted.', 'wc-usaepay' ) . ' ' . sprintf( __( '<a href="%s">Click here</a> to check and delete the full log file.', 'wc-usaepay' ), admin_url( 'admin.php?page=wc-status&tab=logs&log_file=' . WC_Log_Handler_File::get_log_file_name( 'woocommerce-gateway-usaepay' ) ) ),
+				'description' => __( '<strong>CAUTION! Enabling this option will write gateway requests including card numbers and CVV to the logs.</strong> Do not turn this on unless you have a problem processing credit cards. You must only ever enable it temporarily for troubleshooting or to send requested information to the plugin author. It must be disabled straight away after the issues are resolved and the plugin logs should be deleted.', 'wc-usaepay' ) . ' ' . sprintf( __( '<a target="_blank" href="%s">Click here</a> to check and delete the full log file.', 'wc-usaepay' ), esc_url( self::get_log_url() ) ),
 				'default'     => 'no',
 			),
 			'line_items' => array(
@@ -384,9 +428,9 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
                 $order->payment_complete( $response['refnum'] );
 
                 // Add order note
-				$complete_message = trim( sprintf( __( "USAePay charge complete (Charge ID: %s) %s %s", 'wc-usaepay' ), $response['refnum'], self::get_avs_message( $response ), self::get_cvv_message( $response ) ) );
-                $order->add_order_note( $complete_message );
-                $this->log( "Success: $complete_message" );
+				$complete_message = trim( sprintf( __( "USAePay charge completed for %s (Charge ID: %s). %s %s", 'wc-usaepay' ), wc_price( $payment_args['amount'], array( 'currency' => $order->get_currency() ) ), $response['refnum'], self::get_avs_message( $response ), self::get_cvv_message( $response ) ) );
+				$order->add_order_note( $complete_message );
+				$this->log( 'Success: ' . wp_strip_all_tags( $complete_message ) );
 
             } else {
 
@@ -398,9 +442,9 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
                 }
 
                 // Mark as on-hold
-				$authorized_message = trim( sprintf( __( "USAePay charge authorized (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization. %s %s", 'wc-usaepay' ), $response['refnum'], self::get_avs_message( $response ), self::get_cvv_message( $response ) ) );
-                $order->update_status( 'on-hold', $authorized_message . "\n" );
-                $this->log( "Success: $authorized_message" );
+                $authorized_message = trim( sprintf( __( "USAePay charge authorized for %s (Charge ID: %s). Process order to take payment, or cancel to remove the pre-authorization. %s %s", 'wc-usaepay' ), wc_price( $payment_args['amount'], array( 'currency' => $order->get_currency() ) ), $response['refnum'], self::get_avs_message( $response ), self::get_cvv_message( $response ) ) );
+				$order->update_status( 'on-hold', $authorized_message . "\n" );
+                $this->log( 'Success: ' . wp_strip_all_tags( $authorized_message ) );
 
             }
 
@@ -711,6 +755,15 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		$api_hash = 's2/' . $seed . '/' . hash( 'sha256', $prehash );
 
 		return base64_encode( $api_key . ':' . $api_hash );
+	}
+
+	public function get_log_url() {
+		$log_file_name = WC_Log_Handler_File::get_log_file_name( 'woocommerce-gateway-usaepay' );
+		$name_array    = explode( '-', $log_file_name );
+		if ( ! empty( $name_array[6] ) ) {
+			unset( $name_array[6] );
+		}
+		return admin_url( 'admin.php?page=wc-status&tab=logs&view=single_file&file_id=' . implode( '-', $name_array ) );
 	}
 
 }

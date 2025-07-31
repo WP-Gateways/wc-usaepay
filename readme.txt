@@ -5,9 +5,9 @@ Tags: USAePay, payment gateway, woocommerce, secure, blocks
 Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
 Author URI: https://pledgedplugins.com
 Requires at least: 4.4
-Tested up to: 6.6
+Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 4.2.0
+Stable tag: 4.2.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -63,6 +63,17 @@ That's it! You are ready to accept credit cards with your USAePay payment gatewa
 A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 
 == Changelog ==
+
+= 4.2.1 =
+* Added "Capture authorized transaction on status change" option
+* Set order status to Failed only once on unsuccessful capture from Edit Order screen
+* Added filter for capturing on order status change
+* Mentioned authorized and captured amounts in order note
+* Fixed PHP notice on loading translation
+* Fixed issue with data erasure
+* Fixed gateway log URL
+* Updated compatibility info to WordPress 6.8
+* Updated "WC tested up to" header to 10.0
 
 = 4.2.0 =
 * Added checkout block payments support
