@@ -2,12 +2,12 @@
 Contributors: mohsinoffline
 Donate link: https://wpgateways.com/support/send-payment/
 Tags: USAePay, payment gateway, woocommerce, secure, blocks
-Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
-Author URI: https://pledgedplugins.com
+Plugin URI: https://wpgateways.com/products/usaepay-payment-gateway-woocommerce/
+Author URI: https://wpgateways.com/
 Requires at least: 4.4
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 5.6
-Stable tag: 4.2.1
+Stable tag: 4.2.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -19,9 +19,8 @@ This Payment Gateway For WooCommerce extends the functionality of WooCommerce to
 
 [WooCommerce](https://woocommerce.com/) is one of the oldest and most powerful e-commerce solutions for WordPress. This platform is very widely supported in the WordPress community which makes it easy for even an entry level e-commerce entrepreneur to learn to use and modify.
 
-#### Features
-
-* **Easy Install**: Like all Pledged Plugins add-ons, this plugin installs with one click. After installing, you will have only a few fields to fill out before you are ready to accept credit cards on your store.
+#### FREE Pro Version Features
+* **Easy Install**: Like all WP Gateways add-ons, this plugin installs with one click. After installing, you will have only a few fields to fill out before you are ready to accept credit cards on your store.
 * **Secure Credit Card Processing**: Securely process credit cards without redirecting your customers to the gateway website.
 * **Refund via Dashboard**: Process full or partial refunds, directly from your WordPress dashboard! No need to search order in your USAePay account.
 * **Authorize Now, Capture Later**: Optionally choose only to authorize transactions, and capture at a later date.
@@ -29,12 +28,23 @@ This Payment Gateway For WooCommerce extends the functionality of WooCommerce to
 * **Gateway Receipts**: Optionally choose to send receipts from your USAePay merchant account.
 * **Logging**: Enable logging so you can debug issues that arise if any.
 
+> #### Advanced Version Features
+> * Everything that is in the Free Pro version plus...
+> * **Process Subscriptions:**  Use with  [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)  extension to **create and manage products with recurring payments**  — payments that will give you residual revenue you can track and count on.
+> * **Setup Pre-Orders:**  Use with  [WooCommerce Pre-Orders](https://woocommerce.com/products/woocommerce-pre-orders/)  extension so customers can order products before they’re available by submitting their card details. The card is then automatically charged when the pre-order is available.
+> * **ACH Payments:**  Fully supports eCheck payments via ACH network.
+> * **Pay via Saved Cards or Accounts:** Enable option to use saved card or echeck (ACH) account details on the gateway servers for quicker checkout. No sensitive card data is stored on the website!
+> * **Shipping Fields:**  Pass shipping address to USAePay.
+> * **Tax and Shipping Charge Fields:**  Pass dedicated tax and shipping charge fields to USAePay.
+>
+> [Click here](https://wpgateways.com/products/usaepay-payment-gateway-woocommerce/) for Pricing details.
+
 #### Requirements
 * Active  [USAePay](https://www.usaepay.info/)  account – Sign up for a sandbox account  [here](https://developer.usaepay.com/_developer/app/register)  if you need to test.
 * [**WooCommerce**](https://woocommerce.com/)  version 3.3.0 or later.
 * A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 #### Extend, Contribute, Integrate
-Visit the [plugin page](https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
+Visit the [plugin page](https://wpgateways.com/products/usaepay-payment-gateway-woocommerce/) for more details. Contributors are welcome to send pull requests via [Bitbucket repository](https://bitbucket.org/pledged/wc-usaepay/).
 
 For custom payment gateway integration with your WordPress website, please [contact us here](https://wpgateways.com/support/custom-payment-gateway-integration/).
 
@@ -59,10 +69,19 @@ That's it! You are ready to accept credit cards with your USAePay payment gatewa
 
 == Frequently Asked Questions ==
 
+= Which API method does this plugin use? =
+Since version 4.0.0, the plugin uses the latest USAePay  [REST API](https://help.usaepay.info/api/rest/).
+
 = Is SSL Required to use this plugin? =
 A valid SSL certificate is required to ensure your customer credit card details are safe and make your site PCI DSS compliant. This plugin does not store the customer credit card numbers or sensitive information on your website.
 
 == Changelog ==
+
+= 4.2.2 =
+* Added backward compatibility for refunds
+* Added minor improvements in code base
+* Updated "WC tested up to" header to 10.7
+* Updated compatibility info to WordPress 7.0
 
 = 4.2.1 =
 * Added "Capture authorized transaction on status change" option
@@ -72,8 +91,8 @@ A valid SSL certificate is required to ensure your customer credit card details 
 * Fixed PHP notice on loading translation
 * Fixed issue with data erasure
 * Fixed gateway log URL
-* Updated compatibility info to WordPress 6.8
 * Updated "WC tested up to" header to 10.0
+* Updated compatibility info to WordPress 6.8
 
 = 4.2.0 =
 * Added checkout block payments support

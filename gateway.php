@@ -1,27 +1,27 @@
 <?php
 /*
 Plugin Name: Payment Gateway for USAePay on WooCommerce
-Plugin URI: https://pledgedplugins.com/products/usaepay-payment-gateway-woocommerce/
+Plugin URI: https://wpgateways.com/products/usaepay-payment-gateway-woocommerce/
 Description: A payment gateway for USAePay. An USAePay account and a server with cURL, SSL support, and a valid SSL certificate is required (for security reasons) for this gateway to function. Requires WC 3.3+
-Version: 4.2.1
-Author: Pledged Plugins
-Author URI: https://pledgedplugins.com
+Version: 4.2.2
+Author: WP Gateways
+Author URI: https://wpgateways.com
 Text Domain: wc-usaepay
 Domain Path: /languages
 WC requires at least: 3.3
-WC tested up to: 10.0
+WC tested up to: 10.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Requires Plugins: woocommerce
 
-	Copyright: © Pledged Plugins.
+	Copyright: © WP Gateways.
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WC_USAEPAY_VERSION', '4.2.1' );
+define( 'WC_USAEPAY_VERSION', '4.2.2' );
 define( 'WC_USAEPAY_MIN_PHP_VER', '5.6.0' );
 define( 'WC_USAEPAY_MIN_WC_VER', '3.3' );
 define( 'WC_USAEPAY_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
@@ -92,7 +92,8 @@ class WC_USAePay {
 	public function plugin_action_links( $links ) {
 		$plugin_links = array(
 			'<a href="' . esc_url( $this->settings_url() ) . '">' . __( 'Settings', 'wc-usaepay' ) . '</a>',
-			'<a href="https://pledgedplugins.com/support/" target="_blank">' . __( 'Support', 'wc-usaepay' ) . '</a>',
+			'<a href="https://wpgateways.com/support/" target="_blank">' . __( 'Support', 'wc-usaepay' ) . '</a>',
+			'<a href="https://wpgateways.com/products/usaepay-payment-gateway-woocommerce/?upgrade=1" target="_blank">' . __( 'Upgrade to Advanced', 'wc-usaepay' ) . '</a>',
 		);
 
 		return array_merge( $plugin_links, $links );
@@ -237,7 +238,7 @@ class WC_USAePay {
      */
     public function admin_notices() {
 
-        foreach ( $this->notices as $notice ) {
+        foreach ( (array) $this->notices as $notice ) {
 			echo "<div class='" . esc_attr( $notice['class'] ) . "' data-dismissible='" . esc_attr( $notice['data_dismissible'] ) . "'><p>";
 			echo wp_kses( $notice['message'], array( 'a' => array( 'href' => array(), 'target' => array() ) ) );
 			echo '</p></div>';
@@ -342,15 +343,17 @@ class WC_USAePay {
 	 */
 	public function cancel_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
-		$gateway = new WC_Gateway_USAePay();
-
-		$gateway->log( "Info: Beginning cancel payment for order $order_id for the amount of {$order->get_total()}" );
 
 		if ( $order->get_payment_method() == 'usaepay' ) {
-			$charge = $order->get_meta( '_usaepay_charge_id' );
+			$charge   = $order->get_meta( '_usaepay_charge_id' ) ? $order->get_meta( '_usaepay_charge_id' ) : $order->get_transaction_id();
 			$captured = $order->get_meta( '_usaepay_charge_captured' );
 
-			if ( $charge && $captured == 'no' ) {
+			if ( $charge && $captured != 'yes' ) {
+
+				$gateway = new WC_Gateway_USAePay();
+
+				$gateway->log( "Info: Beginning cancel payment for order $order_id for the amount of {$order->get_total()}" );
+
 				$args = array(
 					'command'	=> 'void',
 					'refnum'	=> $order->get_transaction_id(),
