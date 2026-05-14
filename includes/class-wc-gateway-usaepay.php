@@ -36,6 +36,8 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 		$this->method_title         = __( 'USAePay', 'wc-usaepay' );
 		$this->method_description	= sprintf( esc_html__( 'Live merchant accounts cannot be used in a sandbox environment, so to test the plugin, please make sure you are using a separate sandbox account. If you do not have a sandbox account, you can sign up for one from %shere%s.', 'wc-usaepay' ), '<a href="https://developer.usaepay.com/_developer/app/register" target="_blank">', '</a>' );
 		$this->has_fields           = true;
+
+		$this->method_description  .= '<h3>' . __( 'Upgrade to Advanced', 'wc-usaepay' ) . '</h3>' . sprintf( __( 'Advanced version is a full blown plugin that provides support for <strong>processing subscriptions, pre-orders, echeck (ACH) payments and payment via saved cards or bank accounts</strong>. Some of these functionalities require <strong>other premium plugins</strong> that are mentioned on the page linked below. No card details or other sensitive data is stored on your site.<br/><br/><a href="%s" target="_blank">Click here</a> to upgrade to Advanced version or to know more about it.', 'wc-usaepay' ), 'https://wpgateways.com/products/usaepay-payment-gateway-woocommerce/?upgrade=1' );
 		$this->supports             = array( 'products', 'refunds' );
 
 		// Load the form fields
@@ -562,10 +564,10 @@ class WC_Gateway_USAePay extends WC_Payment_Gateway_CC {
 			$this->log( "Gateway Error: " . $response->get_error_message() );
 			return $response;
 		} elseif ( ! empty( $response['refnum'] ) ) {
-			$refund_message = sprintf( __( 'Refunded %s - Refund ID: %s - Reason: %s', 'wc-usaepay' ), $amount, $response['refnum'], $reason );
+			$refund_message = sprintf( __( 'Refunded %s - Refund ID: %s - Reason: %s', 'wc-usaepay' ), wc_price( $args['amount'], array( 'currency' => $order->get_currency() ) ), $response['refnum'], $reason );
 			$order->add_order_note( $refund_message );
 			$order->save();
-			$this->log( "Success: " . html_entity_decode( strip_tags( $refund_message ) ) );
+			$this->log( "Success: " . wp_strip_all_tags( $refund_message ) );
 			return true;
 		}
 	}
